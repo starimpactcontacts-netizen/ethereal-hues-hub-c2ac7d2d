@@ -243,20 +243,23 @@ export default function ArenaQOITop() {
             const idxLabel = tab === 'qoi'
               ? (rawScore >= 1000 ? `${(rawScore / 1000).toFixed(rawScore >= 10000 ? 0 : 1)}K` : rawScore.toFixed(0))
               : rawScore.toString();
-            const rankBadgeBg = rank === 1 ? 'bg-[#D4A857] text-black' : rank === 2 ? 'bg-zinc-300 text-black' : rank === 3 ? 'bg-amber-700 text-white' : 'bg-white/[0.08] text-white/70';
             const scoreColor = rank === 1 ? 'text-[#D4A857]' : rank <= 3 ? 'text-foreground' : 'text-foreground/80';
-            const cardBorder = rank === 1 ? 'border-[#D4A857]/35' : 'border-white/[0.07]';
-            const cardBg = rank === 1 ? '#161310' : '#111';
+            const cardBorder = rank === 1 ? 'border-[#D4A857]/40' : 'border-white/10';
+            const cardBg = rank === 1 ? '#161310' : '#0c0c0e';
             const accentBar = rank === 1
               ? 'linear-gradient(90deg, #D4A857, rgba(212,168,87,0.25) 55%, transparent)'
-              : 'linear-gradient(90deg, rgba(255,255,255,0.16), transparent 65%)';
+              : 'linear-gradient(90deg, rgba(255,255,255,0.14), transparent 65%)';
+            // Angular emblem plate — dark slab with a notched corner, glow tinted per podium tier.
+            // Houses the bespoke crown/hex-shield art so it reads as gear, not a sticker.
+            const plateBorder = rank === 1 ? 'border-[#D4A857]/50' : rank === 2 ? 'border-zinc-300/35' : rank === 3 ? 'border-orange-400/35' : 'border-white/12';
+            const plateGlow = rank === 1 ? 'shadow-[0_0_12px_rgba(212,168,87,0.4)]' : rank <= 3 ? 'shadow-[0_2px_6px_rgba(0,0,0,0.5)]' : '';
 
             return (
               <Link
                 key={row.id}
                 to={`/u/${row.username}`}
-                className={`relative flex items-center gap-3 p-3 rounded-2xl overflow-hidden border ${cardBorder} active:scale-[0.98] transition-transform`}
-                style={{ background: cardBg }}
+                className={`relative flex items-center gap-3 p-3 border ${cardBorder} active:opacity-70 transition-opacity`}
+                style={{ background: cardBg, clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))' }}
               >
                 {/* Dot grid — same texture as the rest of Arena's cards */}
                 <div className="absolute inset-0 pointer-events-none z-0" style={{
@@ -265,21 +268,24 @@ export default function ArenaQOITop() {
                 }} />
                 {/* Top accent bar — gold for the leader, soft white for the rest */}
                 <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-0" style={{ background: accentBar }} />
+                {/* Hard corner notch */}
+                <span className="pointer-events-none absolute top-0 right-0 w-[14px] h-[14px] bg-background z-0" />
+                <span className={`pointer-events-none absolute top-0 right-0 w-[18px] h-px ${rank === 1 ? 'bg-[#D4A857]' : 'bg-white/30'} rotate-45 origin-top-right translate-x-[-1px] z-0`} />
 
-                {/* Avatar with rank badge overlaid */}
+                {/* Avatar with rank emblem overlaid */}
                 <div className="relative z-10 shrink-0">
-                  <Avatar className="w-[52px] h-[52px] border border-white/15">
+                  <Avatar className="w-[52px] h-[52px] rounded-none border border-white/15">
                     <AvatarImage src={row.avatar_url || ''} className="object-cover" />
-                    <AvatarFallback className="bg-white/[0.06] text-foreground text-base font-black">
+                    <AvatarFallback className="bg-white/[0.06] text-foreground text-base font-black rounded-none">
                       {row.username?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-2 ${rankBadgeBg} shadow-lg`}
-                       style={{ borderColor: cardBg }}>
+                  <div className={`absolute -top-1.5 -left-1.5 w-7 h-7 flex items-center justify-center bg-[#0a0a0c] border ${plateBorder} ${plateGlow}`}
+                       style={{ clipPath: 'polygon(0 0, 100% 0, 100% 65%, 65% 100%, 0 100%)' }}>
                     {rank <= 3 ? (
-                      rank === 1 ? <PodiumMark rank={1} /> : <span className="text-[11px] font-black font-mono">{rank}</span>
+                      <PodiumMark rank={rank as 1 | 2 | 3} />
                     ) : (
-                      <span className="text-[10px] font-black font-mono">{rank}</span>
+                      <span className="text-[10px] font-black font-mono text-white/60">{rank}</span>
                     )}
                   </div>
                 </div>
