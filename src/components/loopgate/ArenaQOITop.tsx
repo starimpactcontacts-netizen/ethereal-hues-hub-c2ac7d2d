@@ -249,7 +249,7 @@ export default function ArenaQOITop() {
             const accentBar = rank === 1
               ? 'linear-gradient(90deg, #D4A857, rgba(212,168,87,0.25) 55%, transparent)'
               : 'linear-gradient(90deg, rgba(255,255,255,0.14), transparent 65%)';
-            // Angular emblem plate — dark slab with a notched corner, glow tinted per podium tier.
+            // Angular emblem plate — dark sharp-cornered slab, glow tinted per podium tier.
             // Houses the bespoke crown/hex-shield art so it reads as gear, not a sticker.
             const plateBorder = rank === 1 ? 'border-[#D4A857]/50' : rank === 2 ? 'border-zinc-300/35' : rank === 3 ? 'border-orange-400/35' : 'border-white/12';
             const plateGlow = rank === 1 ? 'shadow-[0_0_12px_rgba(212,168,87,0.4)]' : rank <= 3 ? 'shadow-[0_2px_6px_rgba(0,0,0,0.5)]' : '';
@@ -258,9 +258,17 @@ export default function ArenaQOITop() {
               <Link
                 key={row.id}
                 to={`/u/${row.username}`}
-                className={`relative flex items-center gap-3 p-3 border ${cardBorder} active:opacity-70 transition-opacity`}
-                style={{ background: cardBg, clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))' }}
+                className={`relative flex items-center gap-3 p-3 border ${cardBorder} overflow-hidden active:opacity-70 transition-opacity`}
+                style={{ background: cardBg }}
               >
+                {/* Fortnite-style skewed accent block — slanted parallelogram fill, clipped back to the card's sharp rectangle by overflow-hidden */}
+                <div className="absolute inset-y-0 left-0 w-28 sm:w-36 pointer-events-none z-0" style={{
+                  background: rank === 1
+                    ? 'linear-gradient(115deg, rgba(212,168,87,0.18), rgba(212,168,87,0.02) 75%)'
+                    : 'linear-gradient(115deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01) 75%)',
+                  transform: 'skewX(-20deg)',
+                  transformOrigin: 'top left',
+                }} />
                 {/* Dot grid — same texture as the rest of Arena's cards */}
                 <div className="absolute inset-0 pointer-events-none z-0" style={{
                   backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px)',
@@ -268,9 +276,6 @@ export default function ArenaQOITop() {
                 }} />
                 {/* Top accent bar — gold for the leader, soft white for the rest */}
                 <div className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-0" style={{ background: accentBar }} />
-                {/* Hard corner notch */}
-                <span className="pointer-events-none absolute top-0 right-0 w-[14px] h-[14px] bg-background z-0" />
-                <span className={`pointer-events-none absolute top-0 right-0 w-[18px] h-px ${rank === 1 ? 'bg-[#D4A857]' : 'bg-white/30'} rotate-45 origin-top-right translate-x-[-1px] z-0`} />
 
                 {/* Avatar with rank emblem overlaid */}
                 <div className="relative z-10 shrink-0">
@@ -280,8 +285,7 @@ export default function ArenaQOITop() {
                       {row.username?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -top-1.5 -left-1.5 w-7 h-7 flex items-center justify-center bg-[#0a0a0c] border ${plateBorder} ${plateGlow}`}
-                       style={{ clipPath: 'polygon(0 0, 100% 0, 100% 65%, 65% 100%, 0 100%)' }}>
+                  <div className={`absolute -top-1.5 -left-1.5 w-7 h-7 flex items-center justify-center bg-[#0a0a0c] border ${plateBorder} ${plateGlow}`}>
                     {rank <= 3 ? (
                       <PodiumMark rank={rank as 1 | 2 | 3} />
                     ) : (
