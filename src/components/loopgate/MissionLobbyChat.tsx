@@ -206,7 +206,7 @@ export default function MissionLobbyChat({ missionId }: MissionLobbyChatProps) {
                 </button>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Mission lobby chat — discuss the brief, ask questions, and connect with other editors. Tap a name to @mention.
+                Mission lobby chat — discuss the brief, ask questions, and meet other editors. Tap a name to @mention.
               </p>
             </div>
           </motion.div>
