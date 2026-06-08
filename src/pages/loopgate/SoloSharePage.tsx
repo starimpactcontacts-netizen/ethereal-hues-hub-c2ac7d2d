@@ -210,9 +210,9 @@ export default function SoloSharePage() {
       const codeText = share.slug.toUpperCase();
 
       const drawHUD = () => {
-        const barH = 30;
+        const barH = 46;
         const barY = H - barH;
-        const midY = barY + barH / 2 + 1;
+        const midY = barY + barH / 2;
 
         // Thin red | blue accent line — clean competitive split
         ctx.fillStyle = RED;
@@ -226,38 +226,52 @@ export default function SoloSharePage() {
 
         ctx.textBaseline = 'middle';
 
-        // Left: brand mark + wordmark
+        // Left: cover tile + now-playing-style two-line text (mirrors a music player's "art + title/artist")
+        const tile = 28, tileX = 12, tileY = barY + (barH - tile) / 2;
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        ctx.fillRect(tileX, tileY, tile, tile);
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(tileX + 0.5, tileY + 0.5, tile - 1, tile - 1);
         if (logo) {
-          try { ctx.drawImage(logo, 10, barY + (barH - 18) / 2, 18, 18); } catch {}
+          try { ctx.drawImage(logo, tileX + 6, tileY + 6, tile - 12, tile - 12); } catch {}
         }
+        ctx.textAlign = 'left';
         ctx.fillStyle = '#fff';
         ctx.font = '700 11px Teko, system-ui, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('LOOPGATE.GG', 34, midY);
-
-        // Center: 5 empty stars — instant "rate this editor" cue
+        ctx.fillText('LOOPGATE.GG', tileX + tile + 8, midY - 6);
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.font = '13px system-ui, -apple-system, sans-serif';
+        ctx.font = '800 7px system-ui, -apple-system, sans-serif';
+        ctx.fillText('TAP TO RATE THIS EDIT', tileX + tile + 8, midY + 6);
+
+        // Center: 5-star "transport row" over a seek-bar-style slider
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = '11px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         for (let i = 0; i < 5; i++) {
-          ctx.fillText('☆', W / 2 + (i - 2) * 15, midY);
+          ctx.fillText('☆', W / 2 + (i - 2) * 14, midY - 7);
         }
+        const sliderW = 110, sliderX = W / 2 - sliderW / 2, sliderY = midY + 6, fillW = sliderW * 0.55;
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillRect(sliderX, sliderY, sliderW, 2);
+        const grad = ctx.createLinearGradient(sliderX, 0, sliderX + fillW, 0);
+        grad.addColorStop(0, RED);
+        grad.addColorStop(1, BLUE);
+        ctx.fillStyle = grad;
+        ctx.fillRect(sliderX, sliderY, fillW, 2);
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(sliderX + fillW, sliderY + 1, 2.5, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Right: edit code, label + value as one right-aligned group
-        ctx.font = '900 12px ui-monospace, SFMono-Regular, Menlo, monospace';
-        const codeW = ctx.measureText(codeText).width;
-        ctx.font = '800 8px system-ui, -apple-system, sans-serif';
-        const labelW = ctx.measureText('CODE').width;
-        const codeX = W - 12 - codeW;
-        const labelX = codeX - 4 - labelW;
-
-        ctx.textAlign = 'left';
+        // Right: edit code
+        ctx.textAlign = 'right';
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.font = '800 8px system-ui, -apple-system, sans-serif';
-        ctx.fillText('CODE', labelX, midY);
+        ctx.font = '800 7px system-ui, -apple-system, sans-serif';
+        ctx.fillText('CODE', W - 12, midY - 6);
         ctx.fillStyle = BLUE;
-        ctx.font = '900 12px ui-monospace, SFMono-Regular, Menlo, monospace';
-        ctx.fillText(codeText, codeX, midY);
+        ctx.font = '900 11px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.fillText(codeText, W - 12, midY + 6);
         ctx.textAlign = 'left';
       };
 
@@ -445,25 +459,41 @@ export default function SoloSharePage() {
             </div>
           )}
 
-          {/* Universal embed — one short, square-edged HUD bar. Red/blue split + empty stars = instant "rate this" cue */}
+          {/* Universal embed — Spotify-style "now playing" bar: cover + title/subtitle, star "transport row" over a seek-bar slider, code on the right */}
           <div className="absolute inset-x-0 bottom-0 pointer-events-none">
             <div className="h-[3px] w-full flex">
               <div className="w-1/2 h-full bg-[#FF3B3B]" />
               <div className="w-1/2 h-full bg-[#3B82F6]" />
             </div>
-            <div className="flex items-center justify-between gap-2 px-2 py-1 bg-black border-t border-white/10">
-              <div className="flex items-center gap-1.5 shrink-0">
-                <GateIcon size={14} />
-                <span className="text-[9px] font-black text-white tracking-[0.2em] uppercase" style={TEKO}>Loopgate.gg</span>
+            <div className="flex items-center gap-3 px-2.5 py-2 bg-black border-t border-white/10">
+              {/* Left: cover tile + now-playing-style two-line text */}
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="w-[26px] h-[26px] shrink-0 bg-white/[0.06] border border-white/15 flex items-center justify-center">
+                  <GateIcon size={16} />
+                </div>
+                <div className="leading-tight min-w-0">
+                  <div className="text-[9px] font-black text-white tracking-[0.15em] truncate" style={TEKO}>LOOPGATE.GG</div>
+                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/40 font-bold truncate">Tap To Rate This Edit</div>
+                </div>
               </div>
-              <div className="flex items-center gap-[3px]">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} className="w-3 h-3 text-white/40" strokeWidth={2.25} />
-                ))}
+
+              {/* Center: 5-star "transport row" over a seek-bar-style slider */}
+              <div className="flex flex-col items-center gap-[7px] shrink-0">
+                <div className="flex items-center gap-[4px]">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star key={i} className="w-3 h-3 text-white/40" strokeWidth={2.25} />
+                  ))}
+                </div>
+                <div className="relative w-[110px] h-[2px] bg-white/15">
+                  <div className="absolute inset-y-0 left-0" style={{ width: '55%', background: 'linear-gradient(90deg, #FF3B3B, #3B82F6)' }} />
+                  <div className="absolute top-1/2 left-[55%] -translate-y-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-white" />
+                </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+
+              {/* Right: edit code */}
+              <div className="flex flex-col items-end leading-tight flex-1 min-w-0">
                 <span className="text-[7px] uppercase tracking-[0.15em] text-white/40 font-bold">Code</span>
-                <span className="text-[10px] font-mono font-black text-[#3B82F6] tracking-[0.12em]">{share.slug.toUpperCase()}</span>
+                <span className="text-[10px] font-mono font-black text-[#3B82F6] tracking-[0.12em] truncate">{share.slug.toUpperCase()}</span>
               </div>
             </div>
           </div>
