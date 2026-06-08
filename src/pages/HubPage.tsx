@@ -667,7 +667,7 @@ export default function HubPage() {
                       {/* Class crest + slanted league tag — tucked right under the name, drop-shadow for depth (no plate) */}
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
-                        className="flex items-center gap-1 mt-0.5 active:opacity-70 transition-opacity"
+                        className="flex items-center -mt-2 active:opacity-70 transition-opacity"
                         style={{ filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.55))' }}
                       >
                         <ClassBadge rank={classLetter} size={42} />
@@ -679,6 +679,7 @@ export default function HubPage() {
                             color: '#ffffff',
                             transform: 'skewX(-12deg)',
                             display: 'inline-block',
+                            marginLeft: '-12px',
                             textShadow: '0 1px 0 rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.6), 0 6px 10px rgba(0,0,0,0.5)',
                             WebkitTextStroke: '0.5px rgba(0,0,0,0.6)',
                             paintOrder: 'stroke fill',
