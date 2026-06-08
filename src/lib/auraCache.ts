@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Global cache of user_id -> equipped_aura (null = no aura).
 const cache = new Map<string, string | null>();
 const usernameCache = new Map<string, string | null>();
+const tintCache = new Map<string, Record<string, string>>();
 const pending = new Set<string>();
 const pendingUsernames = new Set<string>();
 const inflight = new Set<string>();
@@ -38,12 +39,13 @@ async function flush() {
   try {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, equipped_aura")
+      .select("id, username, equipped_aura, aura_tints")
       .in("id", ids);
     const seen = new Set<string>();
     if (data) {
-      for (const row of data as Array<{ id: string; username?: string | null; equipped_aura: string | null }>) {
+      for (const row of data as Array<{ id: string; username?: string | null; equipped_aura: string | null; aura_tints?: Record<string, string> | null }>) {
         cache.set(row.id, row.equipped_aura ?? null);
+        tintCache.set(row.id, row.aura_tints ?? {});
         if (row.username) usernameCache.set(row.username.toLowerCase(), row.equipped_aura ?? null);
         seen.add(row.id);
       }
@@ -69,12 +71,13 @@ async function flushUsernames() {
   try {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, equipped_aura")
+      .select("id, username, equipped_aura, aura_tints")
       .in("username", names);
     const seen = new Set<string>();
     if (data) {
-      for (const row of data as Array<{ id: string; username: string; equipped_aura: string | null }>) {
+      for (const row of data as Array<{ id: string; username: string; equipped_aura: string | null; aura_tints?: Record<string, string> | null }>) {
         cache.set(row.id, row.equipped_aura ?? null);
+        tintCache.set(row.id, row.aura_tints ?? {});
         usernameCache.set(row.username.toLowerCase(), row.equipped_aura ?? null);
         seen.add(row.username.toLowerCase());
       }
@@ -129,6 +132,19 @@ export function primeAura(userId: string, aura: string | null) {
   const prev = cache.get(userId);
   cache.set(userId, aura ?? null);
   if (prev !== (aura ?? null)) notify();
+}
+
+export function primeAuraTints(userId: string, tints: Record<string, string>) {
+  if (!userId) return;
+  tintCache.set(userId, tints ?? {});
+  notify();
+}
+
+export function useAuraTint(userId?: string | null, auraSlug?: string | null): string | null {
+  useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  if (!userId || !auraSlug) return null;
+  const tints = tintCache.get(userId);
+  return tints?.[auraSlug.toLowerCase()] ?? null;
 }
 
 export function useAuraByUsername(username?: string | null): string | null {

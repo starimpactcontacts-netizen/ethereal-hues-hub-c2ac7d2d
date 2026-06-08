@@ -8,7 +8,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AuraUsername from "@/components/loopgate/AuraUsername";
-import { primeAura } from "@/lib/auraCache";
+import { AURA_TINTS } from "@/components/loopgate/AuraUsername";
+import { primeAura, primeAuraTints } from "@/lib/auraCache";
 import { primeChatBubble } from "@/lib/chatBubbleCache";
 import ChatBubble from "@/components/loopgate/ChatBubble";
 
@@ -33,6 +34,7 @@ export default function InventoryPage() {
   const [items, setItems] = useState<OwnedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [tints, setTints] = useState<Record<string, string>>({});
 
   const fetchItems = useCallback(async () => {
     if (!user) return;
@@ -53,6 +55,14 @@ export default function InventoryPage() {
         }))
       );
     }
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("aura_tints")
+      .eq("id", user.id)
+      .maybeSingle();
+    const t = ((prof as any)?.aura_tints ?? {}) as Record<string, string>;
+    setTints(t);
+    primeAuraTints(user.id, t);
     setLoading(false);
   }, [user]);
 
@@ -139,6 +149,19 @@ export default function InventoryPage() {
     setToggling(null);
   };
 
+  const setAuraTint = async (auraSlug: string, tintId: string) => {
+    if (!user) return;
+    const next = { ...tints };
+    if (tintId === 'default') delete next[auraSlug];
+    else next[auraSlug] = tintId;
+    setTints(next);
+    primeAuraTints(user.id, next);
+    await supabase
+      .from("profiles")
+      .update({ aura_tints: next } as any)
+      .eq("id", user.id);
+  };
+
   const equipped = items.filter((i) => i.is_equipped);
   const unequipped = items.filter((i) => !i.is_equipped);
 
@@ -213,6 +236,12 @@ export default function InventoryPage() {
                     item={item}
                     toggling={toggling === item.id}
                     onToggle={() => toggleEquip(item)}
+                    tint={item.item?.category === 'aura' ? tints[item.item.name.toLowerCase()] ?? null : null}
+                    onTintChange={
+                      item.item?.category === 'aura'
+                        ? (id) => setAuraTint(item.item!.name.toLowerCase(), id)
+                        : undefined
+                    }
                   />
                 ))}
               </div>
@@ -231,6 +260,12 @@ export default function InventoryPage() {
                   item={item}
                   toggling={toggling === item.id}
                   onToggle={() => toggleEquip(item)}
+                  tint={item.item?.category === 'aura' ? tints[item.item.name.toLowerCase()] ?? null : null}
+                  onTintChange={
+                    item.item?.category === 'aura'
+                      ? (id) => setAuraTint(item.item!.name.toLowerCase(), id)
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -245,10 +280,14 @@ function InventoryCard({
   item,
   toggling,
   onToggle,
+  tint,
+  onTintChange,
 }: {
   item: OwnedItem;
   toggling: boolean;
   onToggle: () => void;
+  tint?: string | null;
+  onTintChange?: (tintId: string) => void;
 }) {
   const isOG = item.item?.name === "OG Claim";
   const isAura = item.item?.category === "aura";
@@ -257,16 +296,16 @@ function InventoryCard({
   const categoryLabel = isAura ? "Aura" : isBubble ? "Chat Bubble" : item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
 
   return (
-    <motion.button
-      onClick={onToggle}
-      disabled={toggling}
+    <motion.div
       whileTap={{ scale: 0.96 }}
       className={cn(
-        "flex flex-col items-center text-center rounded-xl border p-3 transition-all relative overflow-hidden",
+        "flex flex-col items-center text-center rounded-xl border p-3 transition-all relative overflow-hidden cursor-pointer select-none",
+        toggling && "opacity-60",
         item.is_equipped
           ? "bg-primary/5 border-primary/30"
           : "bg-surface-1 border-border hover:border-foreground/20"
       )}
+      onClick={() => { if (!toggling) onToggle(); }}
     >
       {/* Equipped indicator */}
       {item.is_equipped && (
@@ -281,6 +320,7 @@ function InventoryCard({
           <AuraUsername
             username={displayName}
             aura={item.item?.name?.toLowerCase()}
+            tint={tint ?? undefined}
             style={{ fontFamily: "Teko, sans-serif", fontSize: 22, fontWeight: 900, letterSpacing: "0.06em", lineHeight: 1 }}
           />
         ) : isBubble ? (
@@ -316,6 +356,32 @@ function InventoryCard({
       >
         {toggling ? "..." : item.is_equipped ? "Unequip" : "Equip"}
       </span>
-    </motion.button>
+
+      {/* Aura tint picker */}
+      {isAura && onTintChange && (
+        <div
+          className="mt-2 flex flex-wrap items-center justify-center gap-1 w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {AURA_TINTS.map((t) => {
+            const active = (tint ?? 'default') === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                aria-label={t.label}
+                title={t.label}
+                onClick={(e) => { e.stopPropagation(); onTintChange(t.id); }}
+                className={cn(
+                  "w-3.5 h-3.5 rounded-full border transition-all",
+                  active ? "border-foreground scale-110" : "border-border/40"
+                )}
+                style={{ background: t.swatch }}
+              />
+            );
+          })}
+        </div>
+      )}
+    </motion.div>
   );
 }

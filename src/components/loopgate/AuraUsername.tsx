@@ -52,20 +52,53 @@ export const AURA_CFG: Record<AuraSlug, AuraCfg> = {
   },
 };
 
+// Base hue (HSL deg) of each aura's dominant brand color. Used to compute
+// how far to rotate the gradient when a user picks a tint color.
+export const AURA_BASE_HUE: Record<AuraSlug, number> = {
+  steve: 95,
+  specter: 95,
+  hellfire: 0,
+  sovereign: 45,
+};
+
+// Curated tint palette — users pick from these in Inventory to recolor
+// their owned auras. `null` = original/default.
+export const AURA_TINTS: { id: string; label: string; hue: number | null; swatch: string }[] = [
+  { id: 'default', label: 'Original', hue: null, swatch: '#9ca3af' },
+  { id: 'red',     label: 'Red',      hue: 0,    swatch: '#ef4444' },
+  { id: 'orange',  label: 'Orange',   hue: 25,   swatch: '#f97316' },
+  { id: 'gold',    label: 'Gold',     hue: 45,   swatch: '#facc15' },
+  { id: 'green',   label: 'Green',    hue: 110,  swatch: '#22c55e' },
+  { id: 'cyan',    label: 'Cyan',     hue: 180,  swatch: '#06b6d4' },
+  { id: 'blue',    label: 'Blue',     hue: 220,  swatch: '#3b82f6' },
+  { id: 'purple',  label: 'Purple',   hue: 280,  swatch: '#a855f7' },
+  { id: 'pink',    label: 'Pink',     hue: 320,  swatch: '#ec4899' },
+];
+
+function tintRotate(aura: AuraSlug | undefined, tint: string | null | undefined): number {
+  if (!aura || !tint || tint === 'default') return 0;
+  const target = AURA_TINTS.find((t) => t.id === tint)?.hue;
+  if (target == null) return 0;
+  return target - AURA_BASE_HUE[aura];
+}
+
 interface Props {
   username: string;
   aura?: string | null;
+  tint?: string | null;
   style?: React.CSSProperties;
   className?: string;
 }
 
-export default function AuraUsername({ username, aura, style, className }: Props) {
+export default function AuraUsername({ username, aura, tint, style, className }: Props) {
   const auraKey = aura?.toLowerCase() as AuraSlug | undefined;
   const cfg = auraKey ? AURA_CFG[auraKey] : null;
   if (!cfg) {
     return <span className={className} style={style}>{username}</span>;
   }
   const isSovereign = auraKey === 'sovereign';
+  const rotate = tintRotate(auraKey, tint);
+  const filter = rotate !== 0 ? `hue-rotate(${rotate}deg)` : undefined;
   return (
     <span
       className={className}
@@ -100,6 +133,8 @@ export default function AuraUsername({ username, aura, style, className }: Props
           fontFamily: cfg.font,
           fontWeight: cfg.fontWeight,
           letterSpacing: cfg.letterSpacing,
+          filter,
+          WebkitFilter: filter,
         }}
       >
         {username}
