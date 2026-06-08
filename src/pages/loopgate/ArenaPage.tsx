@@ -1869,14 +1869,31 @@ export default function ArenaPage() {
                             </div>
                           </div>
 
-                          {/* Footer — minimized to icons, same convention as Competition's player-count/status row */}
-                          <div className="relative z-10 px-2 py-1.5 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <span className="text-[9px] font-black text-white/35 truncate" style={{ fontFamily: 'Teko, sans-serif' }}>@{s.username}</span>
-                            <span className="text-white/15">·</span>
-                            <Star className="w-2.5 h-2.5 fill-gold text-gold shrink-0" strokeWidth={2.5} />
-                            <span className="text-[9px] font-black text-gold tabular-nums leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
-                              {s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}
-                            </span>
+                          {/* Footer — editor identity (avatar) on top, full 5-star average + rater count below */}
+                          <div className="relative z-10 px-2 py-1.5 flex flex-col gap-1" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              {s.avatar_url ? (
+                                <img src={s.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover shrink-0 border border-white/10" loading="lazy" />
+                              ) : (
+                                <div className="w-4 h-4 rounded-full shrink-0 bg-white/10 flex items-center justify-center">
+                                  <span className="text-[6px] font-black text-white/40">{s.username.charAt(0).toUpperCase()}</span>
+                                </div>
+                              )}
+                              <span className="text-[9px] font-black text-white/40 truncate" style={{ fontFamily: 'Teko, sans-serif' }}>@{s.username}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-[1px] shrink-0">
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                  <Star key={n} className={`w-2 h-2 ${s.avg_rating >= n - 0.5 ? 'fill-gold text-gold' : 'text-white/15'}`} strokeWidth={2.5} />
+                                ))}
+                              </div>
+                              <span className="text-[8px] font-black text-gold tabular-nums leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                                {s.total_ratings > 0 ? s.avg_rating.toFixed(1) : '—'}
+                              </span>
+                              <span className="text-[7px] text-white/30 font-bold leading-none truncate">
+                                ({s.total_ratings})
+                              </span>
+                            </div>
                           </div>
                         </button>
                       </ArenaRailCard>
