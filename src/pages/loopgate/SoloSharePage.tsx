@@ -268,15 +268,27 @@ export default function SoloSharePage() {
         ctx.stroke();
       };
 
-      // 5 small grey "blinking" rating-cue stars, mirrors the on-screen Minecraft animate-pulse cue
-      const drawRatingStars = (cx: number, cy: number, spacing: number) => {
+      // "RATE" micro-label + 5 small grey "blinking" stars — mirrors the on-screen Minecraft cue
+      const drawRatingCue = (cx: number, cy: number) => {
+        const spacing = 16;
+        const gap = 10;
+        ctx.font = '900 7px Minecraft, monospace';
+        const labelW = ctx.measureText('RATE').width;
+        const starsSpan = spacing * 4;
+        const startX = cx - (labelW + gap + starsSpan) / 2;
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.fillText('RATE', startX, cy);
+
+        const starsStartX = startX + labelW + gap;
         const t = performance.now() / 1000;
         ctx.font = '900 10px Minecraft, monospace';
         ctx.textAlign = 'center';
         for (let i = 0; i < 5; i++) {
           const wave = (Math.sin(((t - i * 0.25) / 1.6) * Math.PI * 2) + 1) / 2;
           ctx.fillStyle = `rgba(255,255,255,${(0.15 + wave * 0.18).toFixed(2)})`;
-          ctx.fillText('★', cx + (i - 2) * spacing, cy);
+          ctx.fillText('★', starsStartX + i * spacing, cy);
         }
       };
 
@@ -346,18 +358,15 @@ export default function SoloSharePage() {
         ctx.font = '800 7px system-ui, -apple-system, sans-serif';
         ctx.fillText(sessionText, tileX + tile + 8, midY + 6);
 
-        // Live progress slider — fill + handle move with actual playback
+        // Live progress slider — Spotify-style white track + green fill, moves with actual playback
         const sliderX = tileX + tile + 150;
         const sliderW = W - sliderX - 95;
         const progress = maxDuration > 0 ? Math.min(1, Math.max(0, video.currentTime / maxDuration)) : 0;
         const fillW = sliderW * progress;
-        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
         ctx.fillRect(sliderX, midY - 1, sliderW, 2);
         if (fillW > 0) {
-          const grad = ctx.createLinearGradient(sliderX, 0, sliderX + sliderW, 0);
-          grad.addColorStop(0, RED);
-          grad.addColorStop(1, BLUE);
-          ctx.fillStyle = grad;
+          ctx.fillStyle = '#1DB954';
           ctx.fillRect(sliderX, midY - 1, fillW, 2);
         }
         ctx.fillStyle = '#fff';
@@ -370,8 +379,8 @@ export default function SoloSharePage() {
         drawIconSong(W - 56, iconY);
         drawIconScenepack(W - 34, iconY);
 
-        // Rating cue — small grey blinking stars, baked inside the embed
-        drawRatingStars(W / 2, starY + 1, 16);
+        // Rating cue — "RATE" label + small grey blinking stars, baked inside the embed
+        drawRatingCue(W / 2, starY + 1);
       };
 
       const draw = () => {
@@ -598,9 +607,9 @@ export default function SoloSharePage() {
                 </div>
               </div>
 
-              {/* Live seek-bar — driven straight off video.currentTime via rAF for a smooth glide */}
-              <div className="relative flex-1 h-[2px] bg-white/15">
-                <div ref={progressFillRef} className="absolute inset-y-0 left-0" style={{ width: '0%', background: 'linear-gradient(90deg, #FF3B3B, #3B82F6)' }} />
+              {/* Live seek-bar — Spotify-style white track + green fill, driven via rAF for a smooth glide */}
+              <div className="relative flex-1 h-[2px] bg-white/25">
+                <div ref={progressFillRef} className="absolute inset-y-0 left-0 bg-[#1DB954]" style={{ width: '0%' }} />
                 <div
                   ref={progressHandleRef}
                   className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full bg-white"
@@ -615,8 +624,9 @@ export default function SoloSharePage() {
               </div>
             </div>
 
-            {/* Rating cue — small, blinking, Minecraft-styled stars, baked inside the embed */}
-            <div className="flex items-center justify-center gap-2 pb-2">
+            {/* Rating cue — "RATE" micro-label + blinking Minecraft stars, baked inside the embed */}
+            <div className="flex items-center justify-center gap-2.5 pb-2">
+              <span className="text-[7px] uppercase tracking-[0.24em] text-white/25 font-black leading-none" style={MINECRAFT}>Rate</span>
               {[0, 1, 2, 3, 4].map((i) => (
                 <span
                   key={i}
