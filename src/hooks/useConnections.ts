@@ -180,11 +180,11 @@
  
      if (existing) {
        if (existing.status === 'accepted') {
-         toast.info('Already connected!');
+         toast.info('Already friends!');
        } else if (existing.status === 'pending') {
          toast.info('Request already pending');
        } else {
-         toast.info('Connection was previously declined');
+         toast.info('Request was previously declined');
        }
        return false;
      }
@@ -210,7 +210,7 @@
          updated_at: new Date().toISOString(),
        }, { onConflict: 'user_id,week_start' });
  
-     toast.success('Connection request sent!');
+     toast.success('Friend request sent!');
      fetchConnections();
      return true;
    };
@@ -243,7 +243,7 @@
        // Notification is now handled by database trigger
     }
 
-     toast.success('Connection accepted!');
+     toast.success('Friend request accepted!');
      fetchConnections();
      return true;
    };
@@ -301,11 +301,11 @@
  
      if (error) {
        console.error('Error removing connection:', error);
-       toast.error('Failed to remove connection');
+       toast.error('Failed to remove friend');
        return false;
      }
  
-     toast.info('Connection removed');
+     toast.info('Friend removed');
      fetchConnections();
      return true;
    };
