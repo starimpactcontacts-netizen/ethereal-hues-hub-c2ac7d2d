@@ -645,7 +645,12 @@ export default function HubPage() {
                           </div>
                         )}
                       </div>
-                      <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
+                      <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md flex items-center justify-center gap-0.5"
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.4) 100%), #1a1a20',
+                          border: '1px solid rgba(255,255,255,0.12)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 10px rgba(0,0,0,0.55)',
+                        }}>
                         <img src={lvMonogram} alt="Lv" className="w-3 h-3 object-contain opacity-90" />
                         <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
                       </div>
@@ -659,10 +664,15 @@ export default function HubPage() {
                         </h1>
                         {hasEquippedOG && <FoundingBadge size="sm" animate={false} />}
                       </div>
-                      {/* Class crest + slanted league tag — loopgate HUD style */}
+                      {/* Class crest + slanted league tag — tucked right under the name, raised plate for depth */}
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
-                        className="flex items-center gap-1.5 mt-1.5 active:opacity-70 transition-opacity"
+                        className="flex items-center gap-1 mt-0.5 -ml-1 pl-1 pr-2.5 py-0.5 rounded-md active:opacity-70 active:scale-[0.97] transition-all"
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.35) 100%), #17171c',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 10px rgba(0,0,0,0.5)',
+                        }}
                       >
                         <ClassBadge rank={classLetter} size={42} />
                         <span
