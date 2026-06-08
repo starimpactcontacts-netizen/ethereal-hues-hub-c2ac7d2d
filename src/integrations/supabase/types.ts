@@ -9764,6 +9764,10 @@ export type Database = {
         Args: { comp_id: string }
         Returns: undefined
       }
+      increment_solo_share_views: {
+        Args: { share_id: string }
+        Returns: undefined
+      }
       is_crew_owner: {
         Args: { check_crew_id: string; check_user_id: string }
         Returns: boolean
