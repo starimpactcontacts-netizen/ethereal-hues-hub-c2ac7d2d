@@ -378,10 +378,17 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                     </button>
                     {msg.user_id === user.id && (
                       <button
-                        onClick={() => {
-                          if (confirm("Delete this message for everyone?")) handleDelete(msg.id);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleDelete(msg.id);
                         }}
-                        className="p-1.5 text-red-400/80 hover:text-red-400 active:text-red-500"
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleDelete(msg.id);
+                        }}
+                        className="p-1.5 text-red-400/80 hover:text-red-400 active:text-red-500 touch-manipulation"
                         aria-label="Delete message"
                       >
                         <Trash2 className="w-4 h-4" />
