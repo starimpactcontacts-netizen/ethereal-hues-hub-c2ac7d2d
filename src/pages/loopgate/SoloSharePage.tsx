@@ -79,15 +79,11 @@ export default function SoloSharePage() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Bump views once per page load (best-effort, non-owner)
+  // Bump views every time the page loads (public, includes owner)
   useEffect(() => {
     if (!share) return;
-    if (user && user.id === share.user_id) return;
-    const key = `lg_solo_viewed_${share.id}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, '1');
     supabase.rpc('increment_solo_share_views' as any, { share_id: share.id }).then(() => {});
-  }, [share, user]);
+  }, [share?.id]);
 
   const embedUrl = useMemo(
     () => (share && share.platform !== 'bunny' ? getEmbedUrl(share.video_url, share.platform, share.start_offset_seconds || 0) : null),
