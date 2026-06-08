@@ -98,6 +98,18 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "battle_messages",
+        },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setMessages((prev) => prev.filter((m) => m.id !== deletedId));
+        }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
