@@ -1,0 +1,1 @@
+UPDATE public.profiles SET is_hidden = true WHERE id = 'c78c6497-ca23-43d7-8c9c-fadc32e5430b';
