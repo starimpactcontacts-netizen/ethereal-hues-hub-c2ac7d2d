@@ -7137,6 +7137,7 @@ export type Database = {
         Row: {
           activity_status: string | null
           archetype: string | null
+          aura_tints: Json
           avatar_url: string | null
           banned_at: string | null
           banned_reason: string | null
@@ -7208,6 +7209,7 @@ export type Database = {
         Insert: {
           activity_status?: string | null
           archetype?: string | null
+          aura_tints?: Json
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -7279,6 +7281,7 @@ export type Database = {
         Update: {
           activity_status?: string | null
           archetype?: string | null
+          aura_tints?: Json
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
