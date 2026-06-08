@@ -670,7 +670,7 @@ export default function HubPage() {
                         className="flex items-center -mt-2 active:opacity-70 transition-opacity"
                         style={{ filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.55))' }}
                       >
-                        <ClassBadge rank={classLetter} size={42} />
+                        <ClassBadge rank={classLetter} size={42} className="-ml-3" />
                         <span
                           className="text-[13px] font-black uppercase leading-none"
                           style={{
