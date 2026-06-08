@@ -14,6 +14,7 @@ import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
 import html2canvas from 'html2canvas';
 import { attachHlsSource } from '@/lib/attachHlsSource';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
 const RATED_KEY = (slug: string) => `lg_solo_rated_${slug}`;
 
@@ -178,6 +179,15 @@ export default function SoloSharePage() {
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d')!;
 
+      // Preload brand mark for the embed bar
+      let logo: HTMLImageElement | null = new Image();
+      logo.crossOrigin = 'anonymous';
+      logo.src = loopgateLogo;
+      await new Promise<void>((res) => {
+        logo!.onload = () => res();
+        logo!.onerror = () => { logo = null; res(); };
+      });
+
       const stream = canvas.captureStream(30);
       // Try to pipe audio
       try {
@@ -197,56 +207,57 @@ export default function SoloSharePage() {
       const RED = '#FF3B3B';
       const BLUE = '#3B82F6';
 
-      const ratingText = share.total_ratings > 0 ? share.avg_rating.toFixed(1) : '—';
       const codeText = share.slug.toUpperCase();
 
       const drawHUD = () => {
-        const barH = 56;
+        const barH = 30;
         const barY = H - barH;
+        const midY = barY + barH / 2 + 1;
 
         // Thin red | blue accent line — clean competitive split
         ctx.fillStyle = RED;
-        ctx.fillRect(0, barY - 2, W / 2, 2);
+        ctx.fillRect(0, barY - 3, W / 2, 3);
         ctx.fillStyle = BLUE;
-        ctx.fillRect(W / 2, barY - 2, W / 2, 2);
+        ctx.fillRect(W / 2, barY - 3, W / 2, 3);
 
-        // Bar background
-        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        // Bar background — flat black, sharp edges
+        ctx.fillStyle = '#000';
         ctx.fillRect(0, barY, W, barH);
 
-        ctx.textBaseline = 'alphabetic';
+        ctx.textBaseline = 'middle';
 
-        // Left: white logo mark + wordmark
+        // Left: brand mark + wordmark
+        if (logo) {
+          try { ctx.drawImage(logo, 10, barY + (barH - 18) / 2, 18, 18); } catch {}
+        }
         ctx.fillStyle = '#fff';
-        ctx.fillRect(14, barY + 14, 28, 28);
-        ctx.fillStyle = '#000';
-        ctx.font = '900 12px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('LG', 28, barY + 32);
+        ctx.font = '700 11px Teko, system-ui, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillStyle = '#fff';
-        ctx.font = '900 14px system-ui, -apple-system, sans-serif';
-        ctx.fillText('LOOPGATE.GG', 52, barY + 26);
-        ctx.fillStyle = 'rgba(255,255,255,0.45)';
-        ctx.font = '800 9px system-ui, -apple-system, sans-serif';
-        ctx.fillText('RATE THIS EDIT · LEAVE FEEDBACK', 52, barY + 39);
+        ctx.fillText('LOOPGATE.GG', 34, midY);
 
-        // Right: star rating
-        ctx.fillStyle = RED;
-        ctx.font = '14px system-ui, -apple-system, sans-serif';
-        ctx.fillText('★', W - 195, barY + 33);
-        ctx.fillStyle = '#fff';
-        ctx.font = '900 15px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(ratingText, W - 150, barY + 33);
+        // Center: 5 empty stars — instant "rate this editor" cue
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = '13px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < 5; i++) {
+          ctx.fillText('☆', W / 2 + (i - 2) * 15, midY);
+        }
 
-        // Right: edit code
-        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        // Right: edit code, label + value as one right-aligned group
+        ctx.font = '900 12px ui-monospace, SFMono-Regular, Menlo, monospace';
+        const codeW = ctx.measureText(codeText).width;
         ctx.font = '800 8px system-ui, -apple-system, sans-serif';
-        ctx.fillText('CODE', W - 18, barY + 21);
+        const labelW = ctx.measureText('CODE').width;
+        const codeX = W - 12 - codeW;
+        const labelX = codeX - 4 - labelW;
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = '800 8px system-ui, -apple-system, sans-serif';
+        ctx.fillText('CODE', labelX, midY);
         ctx.fillStyle = BLUE;
-        ctx.font = '900 13px ui-monospace, SFMono-Regular, Menlo, monospace';
-        ctx.fillText(codeText, W - 18, barY + 38);
+        ctx.font = '900 12px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.fillText(codeText, codeX, midY);
         ctx.textAlign = 'left';
       };
 
@@ -409,7 +420,7 @@ export default function SoloSharePage() {
         </div>
 
         {/* Player */}
-        <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-white/[0.08]" style={{ background: '#111114' }}>
+        <div className="relative w-full aspect-square overflow-hidden rounded-t-2xl border border-white/[0.08]" style={{ background: '#111114' }}>
           {share.platform === 'bunny' ? (
             <BunnyVideo src={share.video_url} poster={share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
           ) : embedUrl ? (
@@ -434,31 +445,25 @@ export default function SoloSharePage() {
             </div>
           )}
 
-          {/* Universal embed — single Spotify-style bottom bar, thin red|blue accent line, no attribution */}
+          {/* Universal embed — one short, square-edged HUD bar. Red/blue split + empty stars = instant "rate this" cue */}
           <div className="absolute inset-x-0 bottom-0 pointer-events-none">
-            <div className="h-[2px] w-full flex">
+            <div className="h-[3px] w-full flex">
               <div className="w-1/2 h-full bg-[#FF3B3B]" />
               <div className="w-1/2 h-full bg-[#3B82F6]" />
             </div>
-            <div className="flex items-center justify-between gap-3 px-3 py-2 bg-black/85 backdrop-blur-md">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-6 h-6 shrink-0 bg-white flex items-center justify-center">
-                  <span className="text-black font-black text-[9px] tracking-tighter">LG</span>
-                </div>
-                <div className="leading-tight min-w-0">
-                  <div className="text-[10px] font-black text-white tracking-[0.15em] truncate">LOOPGATE.GG</div>
-                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/45 font-bold truncate">Rate This Edit · Leave Feedback</div>
-                </div>
+            <div className="flex items-center justify-between gap-2 px-2 py-1 bg-black border-t border-white/10">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <GateIcon size={14} />
+                <span className="text-[9px] font-black text-white tracking-[0.2em] uppercase" style={TEKO}>Loopgate.gg</span>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-[#FF3B3B] fill-[#FF3B3B]" />
-                  <span className="text-[12px] font-black text-white tabular-nums">{share.total_ratings > 0 ? share.avg_rating.toFixed(1) : '—'}</span>
-                </div>
-                <div className="leading-tight text-right">
-                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/45 font-bold">Code</div>
-                  <div className="text-[11px] font-mono font-black text-[#3B82F6] tracking-[0.15em]">{share.slug.toUpperCase()}</div>
-                </div>
+              <div className="flex items-center gap-[3px]">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star key={i} className="w-3 h-3 text-white/40" strokeWidth={2.25} />
+                ))}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-[7px] uppercase tracking-[0.15em] text-white/40 font-bold">Code</span>
+                <span className="text-[10px] font-mono font-black text-[#3B82F6] tracking-[0.12em]">{share.slug.toUpperCase()}</span>
               </div>
             </div>
           </div>
