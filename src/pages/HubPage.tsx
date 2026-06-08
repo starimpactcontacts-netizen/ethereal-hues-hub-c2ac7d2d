@@ -668,9 +668,11 @@ export default function HubPage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
                         className="flex items-center -mt-2 active:opacity-70 transition-opacity"
-                        style={{ filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.55))' }}
+                        style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.6))' }}
                       >
-                        <ClassBadge rank={classLetter} size={42} className="-ml-4" />
+                        <span className="-ml-4 inline-flex" style={{ filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.65))' }}>
+                          <ClassBadge rank={classLetter} size={42} />
+                        </span>
                         <span
                           className="text-[13px] font-black uppercase leading-none"
                           style={{
@@ -679,7 +681,7 @@ export default function HubPage() {
                             color: '#ffffff',
                             transform: 'skewX(-12deg)',
                             display: 'inline-block',
-                            marginLeft: '-12px',
+                            marginLeft: '-4px',
                             textShadow: '0 1px 0 rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.6), 0 6px 10px rgba(0,0,0,0.5)',
                             WebkitTextStroke: '0.5px rgba(0,0,0,0.6)',
                             paintOrder: 'stroke fill',
