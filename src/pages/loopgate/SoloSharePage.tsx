@@ -249,6 +249,18 @@ export default function SoloSharePage() {
         ctx.stroke();
       };
 
+      // 5 small grey "blinking" rating-cue stars, mirrors the on-screen Minecraft animate-pulse cue
+      const drawRatingStars = (cx: number, cy: number, spacing: number) => {
+        const t = performance.now() / 1000;
+        ctx.font = '900 10px Minecraft, monospace';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < 5; i++) {
+          const wave = (Math.sin(((t - i * 0.25) / 1.6) * Math.PI * 2) + 1) / 2;
+          ctx.fillStyle = `rgba(255,255,255,${(0.15 + wave * 0.18).toFixed(2)})`;
+          ctx.fillText('★', cx + (i - 2) * spacing, cy);
+        }
+      };
+
       const drawHUD = () => {
         ctx.textBaseline = 'middle';
 
@@ -282,9 +294,12 @@ export default function SoloSharePage() {
         ctx.fillText(codeText, roomBadgeX + 7 + roomLabelW + 5, 10 + badgeH / 2 + 1);
 
         // Bottom "now playing" bar — live, tracks real playback progress
-        const barH = 46;
+        const rowH = 46;
+        const starsRowH = 22;
+        const barH = rowH + starsRowH;
         const barY = H - barH;
-        const midY = barY + barH / 2;
+        const midY = barY + rowH / 2;
+        const starY = barY + rowH + starsRowH / 2;
 
         ctx.fillStyle = '#000';
         ctx.fillRect(0, barY, W, barH);
@@ -335,6 +350,9 @@ export default function SoloSharePage() {
         const iconY = midY - 4;
         drawIconSong(W - 56, iconY);
         drawIconScenepack(W - 34, iconY);
+
+        // Rating cue — small grey blinking stars, baked inside the embed
+        drawRatingStars(W / 2, starY + 1, 16);
       };
 
       const draw = () => {
@@ -501,7 +519,7 @@ export default function SoloSharePage() {
         </div>
 
         {/* Player */}
-        <div className="relative w-full aspect-square overflow-hidden rounded-t-2xl border border-white/[0.08]" style={{ background: '#111114' }}>
+        <div className="relative w-full aspect-square overflow-hidden border border-white/[0.08]" style={{ background: '#111114' }}>
           {share.platform === 'bunny' ? (
             <BunnyVideo
               src={share.video_url}
@@ -547,8 +565,8 @@ export default function SoloSharePage() {
           </div>
 
           {/* Live "now playing" bar — tracks real playback progress, baked into the downloaded edit */}
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none">
-            <div className="flex items-center gap-2.5 px-2.5 py-2 bg-black border-t border-white/10">
+          <div className="absolute inset-x-0 bottom-0 pointer-events-none bg-black border-t border-white/10">
+            <div className="flex items-center gap-2.5 px-2.5 py-2">
               {/* Editor avatar + username + session length */}
               <div className="flex items-center gap-2 min-w-0 shrink-0" style={{ width: '38%' }}>
                 {share.avatar_url ? (
@@ -579,20 +597,20 @@ export default function SoloSharePage() {
                 <Film className="w-3 h-3" />
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Rating cue — small, blinking, Minecraft-styled stars right under the player */}
-        <div className="flex items-center justify-center gap-2 py-3">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <span
-              key={i}
-              className="text-white/30 animate-pulse"
-              style={{ ...MINECRAFT, fontSize: '13px', animationDelay: `${i * 0.25}s`, animationDuration: '1.6s' }}
-            >
-              ★
-            </span>
-          ))}
+            {/* Rating cue — small, blinking, Minecraft-styled stars, baked inside the embed */}
+            <div className="flex items-center justify-center gap-2 pb-2">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span
+                  key={i}
+                  className="text-white/30 animate-pulse"
+                  style={{ ...MINECRAFT, fontSize: '11px', animationDelay: `${i * 0.25}s`, animationDuration: '1.6s' }}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Downloadable share card (hidden off-screen, rendered for capture) */}
