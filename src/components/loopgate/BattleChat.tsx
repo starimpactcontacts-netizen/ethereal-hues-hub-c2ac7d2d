@@ -368,20 +368,23 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
 
                 {/* Reply button on hover */}
                 {user && (
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                     <button
                       onClick={() => handleReply(msg)}
-                      className="p-1 text-white/20 hover:text-white/50"
+                      className="p-1.5 text-white/30 hover:text-white/70 active:text-white"
+                      aria-label="Reply"
                     >
-                      <Reply className="w-3 h-3 rotate-180" />
+                      <Reply className="w-3.5 h-3.5 rotate-180" />
                     </button>
                     {msg.user_id === user.id && (
                       <button
-                        onClick={() => handleDelete(msg.id)}
-                        className="p-1 text-white/20 hover:text-red-400"
-                        title="Delete message"
+                        onClick={() => {
+                          if (confirm("Delete this message for everyone?")) handleDelete(msg.id);
+                        }}
+                        className="p-1.5 text-white/30 hover:text-red-400 active:text-red-500"
+                        aria-label="Delete message"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
