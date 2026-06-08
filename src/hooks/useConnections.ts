@@ -147,12 +147,12 @@
    // Send connection request
    const sendRequest = async (receiverId: string): Promise<boolean> => {
      if (!user) {
-       toast.error('Please log in to connect');
+       toast.error('Please log in to add friends');
        return false;
      }
  
      if (receiverId === user.id) {
-       toast.error("You can't connect with yourself");
+       toast.error("You can't add yourself");
        return false;
      }
  
