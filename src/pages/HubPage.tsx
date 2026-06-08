@@ -84,7 +84,7 @@ const typeLabels: Record<string, string> = {
   review: 'REVIEW',
   battle: 'BATTLE',
   judge_video: 'VIDEO',
-  connection: 'LINK',
+  connection: 'FRIEND',
   featured_sub: 'DROP',
   crew_join: 'UNIT',
   hosted_entry: 'COMP',

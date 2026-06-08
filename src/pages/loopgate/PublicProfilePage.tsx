@@ -444,7 +444,7 @@ export default function PublicProfilePage() {
               <div className="w-px h-7 bg-border/30" />
               <div className="flex-1 flex flex-col items-center">
                 <span className="font-display text-base font-bold tabular-nums leading-none">{realConnectionCount}</span>
-                <span className="text-[10px] text-muted-foreground/60 mt-0.5">Connections</span>
+                <span className="text-[10px] text-muted-foreground/60 mt-0.5">Friends</span>
               </div>
               <div className="w-px h-7 bg-border/30" />
               <div className="flex-1 flex flex-col items-center">
@@ -453,7 +453,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            {/* TikTok-style buttons: Connect | Message | Rate */}
+            {/* TikTok-style buttons: Add Friend | Message | Rate */}
             <div className="flex items-center gap-2 w-full max-w-[280px] mb-2">
               <div className="flex-1">
                 <ConnectButton targetUserId={profile.id} className="w-full rounded-full h-8 text-xs" />

@@ -94,7 +94,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
           className={cn('inline-flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors', className)}
         >
           <UserPlus size={10} />
-          Connect
+          Add Friend
         </button>
       );
     }
@@ -105,7 +105,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
           className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground hover:text-white hover:border-foreground/30 transition-colors', className)}
         >
           <UserPlus size={10} />
-          Connect
+          Add Friend
         </button>
       );
     }
@@ -116,7 +116,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
           className={cn('inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors', className)}
         >
           <UserPlus size={12} />
-          Connect
+          Add Friend
         </button>
       );
     }
@@ -140,7 +140,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
         onClick={() => navigate('/login')}
       >
         <UserPlus size={14} />
-        Connect
+        Add Friend
       </Button>
     );
   }
@@ -189,8 +189,8 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
     await supabase.from('notifications').insert({
       user_id: targetUserId,
       type: 'connection_request',
-      title: 'New Connection Request',
-      message: `@${senderProfile?.username || 'Someone'} wants to connect with you`,
+      title: 'New Friend Request',
+      message: `@${senderProfile?.username || 'Someone'} wants to be your friend`,
       data: { sender_id: user.id, connection_id: newConn.id }
     });
 
@@ -204,7 +204,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,week_start' });
 
-    toast.success('Connection request sent!');
+    toast.success('Friend request sent!');
     setData({ status: 'pending_sent', connectionId: newConn.id });
     setWeeklyRemaining(prev => Math.max(0, prev - 1));
      setActionLoading(false);
@@ -244,7 +244,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       await supabase.from('notifications').insert({
         user_id: connData.sender_id,
         type: 'connection_accepted',
-        title: 'Connection Accepted!',
+        title: 'Friend Request Accepted!',
         message: `@${accepterProfile?.username || 'Someone'} accepted your connection request`,
         data: { user_id: user.id, connection_id: data.connectionId }
       });
@@ -256,7 +256,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       });
     }
 
-    toast.success('Connected!');
+    toast.success('Friends!');
     setData({ status: 'connected', connectionId: data.connectionId });
      setActionLoading(false);
    };
@@ -309,7 +309,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       return (
         <span className={cn('inline-flex items-center gap-1 text-[9px] text-emerald-500/80', className)}>
           <UserCheck size={10} />
-          Connected
+          Friends
         </span>
       );
     }
@@ -347,7 +347,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
         className={cn('inline-flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50', className)}
       >
         {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
-        Connect
+        Add Friend
       </button>
     );
   }
@@ -358,7 +358,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       return (
         <span className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500', className)}>
           <UserCheck size={10} />
-          Connected
+          Friends
         </span>
       );
     }
@@ -396,7 +396,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
         className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground hover:text-white hover:border-foreground/30 transition-colors disabled:opacity-50', className)}
       >
         {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
-        Connect
+        Add Friend
       </button>
     );
   }
@@ -463,7 +463,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
        return (
         <span className={cn('inline-flex items-center gap-1 text-xs text-emerald-500', className)}>
            <UserCheck size={12} />
-           Connected
+           Friends
          </span>
        );
      }
@@ -501,7 +501,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
          className={cn('inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors disabled:opacity-50', className)}
        >
          {actionLoading ? <Loader2 size={12} className="animate-spin" /> : <UserPlus size={12} />}
-         Connect
+         Add Friend
        </button>
      );
    }
@@ -516,7 +516,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
          disabled
        >
          <UserCheck size={14} />
-         Connected
+         Friends
        </Button>
      );
    }
@@ -559,7 +559,7 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
        disabled={actionLoading || weeklyRemaining <= 0}
       >
         {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
-        Connect
+        Add Friend
       </Button>
     );
   }

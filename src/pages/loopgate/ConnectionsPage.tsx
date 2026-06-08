@@ -51,7 +51,7 @@ import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
            <ArrowLeft size={18} className="text-muted-foreground" />
          </button>
          <div>
-           <h1 className="font-display text-xl">Connections</h1>
+           <h1 className="font-display text-xl">Friends</h1>
            <p className="text-xs text-muted-foreground">
              {stats.weeklyRequestsRemaining} requests remaining this week
            </p>
@@ -116,9 +116,9 @@ import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
              connections.length === 0 ? (
                <div className="text-center py-12">
                  <Users size={32} className="mx-auto mb-3 text-muted-foreground/50" />
-                 <p className="text-muted-foreground text-sm">No connections yet</p>
+                 <p className="text-muted-foreground text-sm">No friends yet</p>
                  <p className="text-muted-foreground/60 text-xs mt-1">
-                   Visit profiles and send connection requests
+                   Visit profiles and send friend requests
                  </p>
                </div>
              ) : (
@@ -197,7 +197,7 @@ import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
                        </span>
                        {c.profile?.verification_status && <VerifiedBadge size="sm" />}
                      </button>
-                     <p className="text-xs text-muted-foreground">wants to connect</p>
+                     <p className="text-xs text-muted-foreground">wants to be your friend</p>
                    </div>
                    <div className="flex items-center gap-2">
                      <Button

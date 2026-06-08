@@ -109,7 +109,7 @@ export default function EditorCard({ editor }: EditorCardProps) {
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider flex-wrap">
             <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
             <span>{editor.total_events || 0} Events</span>
-          <span>{editor.connection_count || 0} Connections</span>
+          <span>{editor.connection_count || 0} Friends</span>
             {editor.created_at && (
               <span className="text-gold/80">Since {new Date(editor.created_at).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}</span>
             )}
@@ -119,9 +119,9 @@ export default function EditorCard({ editor }: EditorCardProps) {
           </div>
         </div>
 
-        {/* Connect & Stats */}
+        {/* Add Friend & Stats */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Quick Connect - always visible */}
+          {/* Quick Add Friend - always visible */}
           {!isOwnProfile && (
             <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
               {user ? (
@@ -132,7 +132,7 @@ export default function EditorCard({ editor }: EditorCardProps) {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors"
                 >
                   <Plus size={12} />
-                  Connect
+                  Add Friend
                 </button>
               )}
             </div>

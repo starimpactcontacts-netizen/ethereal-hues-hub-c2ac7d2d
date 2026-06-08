@@ -32,7 +32,7 @@ const arenas: Arena[] = [
   {
     id: 2,
     title: "Open League Arena",
-    description: "Connect with fellow competitors",
+    description: "Add friends, find collaborators",
     icon: Users,
     requiredLeague: null, // Open to all
   },

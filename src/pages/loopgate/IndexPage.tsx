@@ -636,13 +636,13 @@ export default function IndexPage() {
                   </div>
                 </div>
 
-                {/* ─── SUGGESTED CONNECTIONS ─── */}
+                {/* ─── SUGGESTED FRIENDS ─── */}
                 {profile && trending.length > 0 && (
                   <div className="pt-3 pb-1">
                     <div className="flex items-center justify-between px-4 mb-2.5">
                       <div className="flex items-center gap-2">
                         <UserPlus className="w-4 h-4 text-foreground/50" />
-                        <h2 className="font-display text-lg tracking-wide text-foreground">CONNECT</h2>
+                        <h2 className="font-display text-lg tracking-wide text-foreground">FRIENDS</h2>
                         <span className="text-[10px] text-muted-foreground/60 ml-1">People you may know</span>
                       </div>
                     </div>
@@ -1079,7 +1079,7 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
               </div>
             </div>
             
-            {/* Score + Connect */}
+            {/* Score + Add Friend */}
             <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <span className={`font-display text-xl tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
                 {(editor.global_index_score || 0).toFixed(1)}

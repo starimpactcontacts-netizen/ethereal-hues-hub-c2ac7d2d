@@ -676,7 +676,7 @@ export default function CrewsPage() {
                   ) : (
                     <div className="p-4 rounded-xl bg-surface-1/30 border border-dashed border-border text-center">
                       <p className="text-xs text-muted-foreground">
-                        Join units for practice and social connections
+                        Join units for practice and friends
                       </p>
                     </div>
                   )}
