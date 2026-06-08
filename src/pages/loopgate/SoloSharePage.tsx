@@ -37,6 +37,7 @@ export default function SoloSharePage() {
   const playerVideoRef = useRef<HTMLVideoElement | null>(null);
   const progressFillRef = useRef<HTMLDivElement>(null);
   const progressHandleRef = useRef<HTMLDivElement>(null);
+  const [videoAspect, setVideoAspect] = useState<number | null>(null);
 
   useEffect(() => {
     if (slug && localStorage.getItem(RATED_KEY(slug))) setAlreadyRated(true);
@@ -193,8 +194,11 @@ export default function SoloSharePage() {
         setTimeout(() => reject(new Error('Video load timeout')), 15000);
       });
 
-      // Square 720x720 export
-      const W = 720, H = 720;
+      // Match the canvas to the edit's native aspect ratio (9:16, 3:4, 1:1, etc.) — never force-crop to square
+      const vw0 = video.videoWidth || 720, vh0 = video.videoHeight || 720;
+      const maxDim = 1080;
+      const exportScale = Math.min(1, maxDim / Math.max(vw0, vh0));
+      const W = Math.round(vw0 * exportScale), H = Math.round(vh0 * exportScale);
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d')!;
@@ -380,14 +384,10 @@ export default function SoloSharePage() {
       };
 
       const draw = () => {
-        const vw = video.videoWidth, vh = video.videoHeight;
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, W, H);
-        if (vw && vh) {
-          const scale = Math.max(W / vw, H / vh);
-          const dw = vw * scale, dh = vh * scale;
-          try { ctx.drawImage(video, (W - dw) / 2, (H - dh) / 2, dw, dh); } catch {}
-        }
+        // Canvas already matches the video's native aspect ratio — draw it edge-to-edge, nothing cropped or stretched
+        try { ctx.drawImage(video, 0, 0, W, H); } catch {}
         drawHUD();
         rafId = requestAnimationFrame(draw);
       };
@@ -542,8 +542,11 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Player */}
-        <div className="relative w-full aspect-square overflow-hidden border border-white/[0.08]" style={{ background: '#111114' }}>
+        {/* Player — sized to the edit's native aspect ratio (9:16, 3:4, 1:1, etc.) so nothing gets cropped or stretched */}
+        <div
+          className="relative w-full overflow-hidden border border-white/[0.08]"
+          style={{ background: '#111114', aspectRatio: videoAspect ? String(videoAspect) : '1' }}
+        >
           {share.platform === 'bunny' ? (
             <BunnyVideo
               ref={playerVideoRef}
@@ -552,6 +555,10 @@ export default function SoloSharePage() {
               className="absolute inset-0 w-full h-full object-cover"
               controls
               autoPlay={false}
+              onLoadedMetadata={(e) => {
+                const v = e.currentTarget;
+                if (v.videoWidth && v.videoHeight) setVideoAspect(v.videoWidth / v.videoHeight);
+              }}
             />
           ) : embedUrl ? (
             <iframe
