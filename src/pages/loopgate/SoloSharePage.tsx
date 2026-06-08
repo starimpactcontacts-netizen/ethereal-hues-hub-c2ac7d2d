@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, Shield, ChevronRight } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
@@ -178,18 +178,6 @@ export default function SoloSharePage() {
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d')!;
 
-      // Preload avatar
-      let avatar: HTMLImageElement | null = null;
-      if (share.avatar_url) {
-        avatar = new Image();
-        avatar.crossOrigin = 'anonymous';
-        avatar.src = share.avatar_url;
-        await new Promise<void>((res) => {
-          avatar!.onload = () => res();
-          avatar!.onerror = () => { avatar = null; res(); };
-        });
-      }
-
       const stream = canvas.captureStream(30);
       // Try to pipe audio
       try {
@@ -209,70 +197,57 @@ export default function SoloSharePage() {
       const RED = '#FF3B3B';
       const BLUE = '#3B82F6';
 
-      const drawHUD = () => {
-        ctx.lineWidth = 1;
+      const ratingText = share.total_ratings > 0 ? share.avg_rating.toFixed(1) : '—';
+      const codeText = share.slug.toUpperCase();
 
-        // Top-left identity pill — red accent edge
-        ctx.fillStyle = 'rgba(0,0,0,0.8)';
-        ctx.fillRect(16, 16, 260, 60);
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.strokeRect(16, 16, 260, 60);
+      const drawHUD = () => {
+        const barH = 56;
+        const barY = H - barH;
+
+        // Thin red | blue accent line — clean competitive split
         ctx.fillStyle = RED;
-        ctx.fillRect(16, 16, 3, 60);
-        if (avatar) {
-          try { ctx.drawImage(avatar, 26, 26, 40, 40); } catch {}
-        } else {
-          ctx.fillStyle = 'rgba(255,255,255,0.1)';
-          ctx.fillRect(26, 26, 40, 40);
-        }
-        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-        ctx.strokeRect(26, 26, 40, 40);
+        ctx.fillRect(0, barY - 2, W / 2, 2);
+        ctx.fillStyle = BLUE;
+        ctx.fillRect(W / 2, barY - 2, W / 2, 2);
+
+        // Bar background
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(0, barY, W, barH);
+
+        ctx.textBaseline = 'alphabetic';
+
+        // Left: white logo mark + wordmark
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(14, barY + 14, 28, 28);
+        ctx.fillStyle = '#000';
+        ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('LG', 28, barY + 32);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 14px system-ui, -apple-system, sans-serif';
+        ctx.fillText('LOOPGATE.GG', 52, barY + 26);
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.font = '800 9px system-ui, -apple-system, sans-serif';
+        ctx.fillText('RATE THIS EDIT · LEAVE FEEDBACK', 52, barY + 39);
+
+        // Right: star rating
+        ctx.fillStyle = RED;
+        ctx.font = '14px system-ui, -apple-system, sans-serif';
+        ctx.fillText('★', W - 195, barY + 33);
         ctx.fillStyle = '#fff';
         ctx.font = '900 15px system-ui, -apple-system, sans-serif';
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillText(`@${share.username.toUpperCase()}`, 76, 44);
-        ctx.fillStyle = RED;
-        ctx.font = '800 10px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`LVL ${levelNum} · ${leagueLabel}`, 76, 62);
-
-        // Top-right IDX — blue accent edge
-        ctx.fillStyle = 'rgba(0,0,0,0.8)';
-        ctx.fillRect(W - 168, 16, 152, 60);
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.strokeRect(W - 168, 16, 152, 60);
-        ctx.fillStyle = BLUE;
-        ctx.fillRect(W - 19, 16, 3, 60);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.font = '800 10px system-ui';
         ctx.textAlign = 'right';
-        ctx.fillText('IDX', W - 30, 36);
+        ctx.fillText(ratingText, W - 150, barY + 33);
+
+        // Right: edit code
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.font = '800 8px system-ui, -apple-system, sans-serif';
+        ctx.fillText('CODE', W - 18, barY + 21);
         ctx.fillStyle = BLUE;
-        ctx.font = '900 22px system-ui';
-        ctx.fillText(Number(idxScore).toFixed(2), W - 30, 62);
+        ctx.font = '900 13px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.fillText(codeText, W - 18, barY + 38);
         ctx.textAlign = 'left';
-
-        // Bottom-left room code — red accent edge
-        ctx.fillStyle = 'rgba(0,0,0,0.8)';
-        ctx.fillRect(16, H - 76, 240, 60);
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.strokeRect(16, H - 76, 240, 60);
-        ctx.fillStyle = RED;
-        ctx.fillRect(16, H - 76, 3, 60);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.font = '800 10px system-ui';
-        ctx.fillText('ROOM', 30, H - 56);
-        ctx.fillStyle = '#fff';
-        ctx.font = '900 18px ui-monospace, SFMono-Regular, Menlo, monospace';
-        ctx.fillText(share.slug.toUpperCase(), 30, H - 30);
-
-        // Bottom-right brand — clean white tag, blue accent edge
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(W - 200, H - 60, 184, 44);
-        ctx.fillStyle = BLUE;
-        ctx.fillRect(W - 19, H - 60, 3, 44);
-        ctx.fillStyle = '#000';
-        ctx.font = '900 15px system-ui';
-        ctx.fillText('LOOPGATE.GG', W - 188, H - 32);
       };
 
       const draw = () => {
@@ -459,39 +434,32 @@ export default function SoloSharePage() {
             </div>
           )}
 
-          {/* Smash-style competitive HUD overlay — white / red / blue / black, clean thin edges */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Top-left: editor identity — red edge */}
-            <div className="absolute top-2 left-2 flex items-center gap-2 pl-2 pr-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 border-l-[3px] border-l-[#FF3B3B]">
-              {share.avatar_url ? (
-                <img src={share.avatar_url} alt="" className="w-6 h-6 object-cover border border-white/25" crossOrigin="anonymous" />
-              ) : (
-                <div className="w-6 h-6 bg-white/10 border border-white/25" />
-              )}
-              <div className="leading-tight">
-                <div className="text-[10px] font-black tracking-wider text-white">@{share.username.toUpperCase()}</div>
-                <div className="text-[8px] uppercase tracking-[0.2em] text-[#FF3B3B] font-bold">LVL {levelNum} · {leagueLabel}</div>
+          {/* Universal embed — single Spotify-style bottom bar, thin red|blue accent line, no attribution */}
+          <div className="absolute inset-x-0 bottom-0 pointer-events-none">
+            <div className="h-[2px] w-full flex">
+              <div className="w-1/2 h-full bg-[#FF3B3B]" />
+              <div className="w-1/2 h-full bg-[#3B82F6]" />
+            </div>
+            <div className="flex items-center justify-between gap-3 px-3 py-2 bg-black/85 backdrop-blur-md">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-6 h-6 shrink-0 bg-white flex items-center justify-center">
+                  <span className="text-black font-black text-[9px] tracking-tighter">LG</span>
+                </div>
+                <div className="leading-tight min-w-0">
+                  <div className="text-[10px] font-black text-white tracking-[0.15em] truncate">LOOPGATE.GG</div>
+                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/45 font-bold truncate">Rate This Edit · Leave Feedback</div>
+                </div>
               </div>
-            </div>
-
-            {/* Top-right: IDX score — blue edge */}
-            <div className="absolute top-2 right-2 flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 border-r-[3px] border-r-[#3B82F6]">
-              <div className="leading-tight text-right">
-                <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">IDX</div>
-                <div className="text-[11px] font-black text-[#3B82F6] tabular-nums">{Number(idxScore).toFixed(2)}</div>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-1">
+                  <Star className="w-3 h-3 text-[#FF3B3B] fill-[#FF3B3B]" />
+                  <span className="text-[12px] font-black text-white tabular-nums">{share.total_ratings > 0 ? share.avg_rating.toFixed(1) : '—'}</span>
+                </div>
+                <div className="leading-tight text-right">
+                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/45 font-bold">Code</div>
+                  <div className="text-[11px] font-mono font-black text-[#3B82F6] tracking-[0.15em]">{share.slug.toUpperCase()}</div>
+                </div>
               </div>
-              <Shield className="w-3 h-3 text-[#3B82F6]" />
-            </div>
-
-            {/* Bottom-left: room code — red edge */}
-            <div className="absolute bottom-2 left-2 pl-2 pr-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 border-l-[3px] border-l-[#FF3B3B]">
-              <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-bold">ROOM</div>
-              <div className="text-[11px] font-mono font-black text-white tracking-[0.18em]">{share.slug.toUpperCase()}</div>
-            </div>
-
-            {/* Bottom-right: loopgate.gg branding — clean white flag, blue edge */}
-            <div className="absolute bottom-2 right-2 px-3 py-1.5 bg-white border-r-[3px] border-r-[#3B82F6]">
-              <div className="text-[10px] font-black text-black tracking-[0.15em]">LOOPGATE.GG</div>
             </div>
           </div>
         </div>
