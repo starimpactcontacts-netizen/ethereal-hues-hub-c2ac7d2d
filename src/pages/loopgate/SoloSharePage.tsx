@@ -270,9 +270,9 @@ export default function SoloSharePage() {
 
       // "RATE" micro-label + 5 small grey "blinking" stars — mirrors the on-screen Minecraft cue
       const drawRatingCue = (cx: number, cy: number) => {
-        const spacing = 16;
-        const gap = 10;
-        ctx.font = '900 7px Minecraft, monospace';
+        const spacing = 12;
+        const gap = 7;
+        ctx.font = '900 6px Minecraft, monospace';
         const labelW = ctx.measureText('RATE').width;
         const starsSpan = spacing * 4;
         const startX = cx - (labelW + gap + starsSpan) / 2;
@@ -283,7 +283,7 @@ export default function SoloSharePage() {
 
         const starsStartX = startX + labelW + gap;
         const t = performance.now() / 1000;
-        ctx.font = '900 10px Minecraft, monospace';
+        ctx.font = '900 8px Minecraft, monospace';
         ctx.textAlign = 'center';
         for (let i = 0; i < 5; i++) {
           const wave = (Math.sin(((t - i * 0.25) / 1.6) * Math.PI * 2) + 1) / 2;
@@ -325,8 +325,8 @@ export default function SoloSharePage() {
         ctx.fillText(codeText, roomBadgeX + 7 + roomLabelW + 5, 10 + badgeH / 2 + 1);
 
         // Bottom "now playing" bar — live, tracks real playback progress
-        const rowH = 46;
-        const starsRowH = 22;
+        const rowH = 38;
+        const starsRowH = 16;
         const barH = rowH + starsRowH;
         const barY = H - barH;
         const midY = barY + rowH / 2;
@@ -336,7 +336,7 @@ export default function SoloSharePage() {
         ctx.fillRect(0, barY, W, barH);
 
         // Editor avatar + username + session length
-        const tile = 28, tileX = 12, tileY = barY + (barH - tile) / 2;
+        const tile = 24, tileX = 12, tileY = barY + (barH - starsRowH - tile) / 2;
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.fillRect(tileX, tileY, tile, tile);
         ctx.strokeStyle = 'rgba(255,255,255,0.15)';
@@ -346,20 +346,20 @@ export default function SoloSharePage() {
           try { ctx.drawImage(avatar, tileX, tileY, tile, tile); } catch {}
         } else {
           ctx.fillStyle = 'rgba(255,255,255,0.3)';
-          ctx.font = '900 12px system-ui, -apple-system, sans-serif';
+          ctx.font = '900 10px system-ui, -apple-system, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(share.username.charAt(0).toUpperCase(), tileX + tile / 2, tileY + tile / 2 + 1);
         }
         ctx.textAlign = 'left';
         ctx.fillStyle = '#fff';
-        ctx.font = '900 9px system-ui, -apple-system, sans-serif';
-        ctx.fillText(editorText, tileX + tile + 8, midY - 6);
+        ctx.font = '900 8px system-ui, -apple-system, sans-serif';
+        ctx.fillText(editorText, tileX + tile + 7, midY - 5);
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.font = '800 7px system-ui, -apple-system, sans-serif';
-        ctx.fillText(sessionText, tileX + tile + 8, midY + 6);
+        ctx.font = '800 6px system-ui, -apple-system, sans-serif';
+        ctx.fillText(sessionText, tileX + tile + 7, midY + 5);
 
         // Live progress slider — Spotify-style white track + green fill, moves with actual playback
-        const sliderX = tileX + tile + 150;
+        const sliderX = tileX + tile + 138;
         const sliderW = W - sliderX - 95;
         const progress = maxDuration > 0 ? Math.min(1, Math.max(0, video.currentTime / maxDuration)) : 0;
         const fillW = sliderW * progress;
@@ -591,19 +591,19 @@ export default function SoloSharePage() {
 
           {/* Live "now playing" bar — tracks real playback progress, baked into the downloaded edit */}
           <div className="absolute inset-x-0 bottom-0 pointer-events-none bg-black border-t border-white/10">
-            <div className="flex items-center gap-2.5 px-2.5 py-2">
+            <div className="flex items-center gap-2 px-2.5 py-1.5">
               {/* Editor avatar + username + session length */}
-              <div className="flex items-center gap-2 min-w-0 shrink-0" style={{ width: '38%' }}>
+              <div className="flex items-center gap-1.5 min-w-0 shrink-0" style={{ width: '38%' }}>
                 {share.avatar_url ? (
-                  <img src={share.avatar_url} alt="" className="w-7 h-7 object-cover shrink-0 border border-white/15" crossOrigin="anonymous" />
+                  <img src={share.avatar_url} alt="" className="w-6 h-6 object-cover shrink-0 border border-white/15" crossOrigin="anonymous" />
                 ) : (
-                  <div className="w-7 h-7 shrink-0 bg-white/[0.06] border border-white/15 flex items-center justify-center">
-                    <span className="text-[9px] font-black text-white/30">{share.username.charAt(0).toUpperCase()}</span>
+                  <div className="w-6 h-6 shrink-0 bg-white/[0.06] border border-white/15 flex items-center justify-center">
+                    <span className="text-[8px] font-black text-white/30">{share.username.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
                 <div className="leading-tight min-w-0">
-                  <div className="text-[9px] font-black text-white uppercase tracking-wider truncate">@{share.username}</div>
-                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/40 font-bold truncate">{sessionLabel}</div>
+                  <div className="text-[8px] font-black text-white uppercase tracking-wider truncate">@{share.username}</div>
+                  <div className="text-[6px] uppercase tracking-[0.18em] text-white/40 font-bold truncate">{sessionLabel}</div>
                 </div>
               </div>
 
@@ -625,13 +625,13 @@ export default function SoloSharePage() {
             </div>
 
             {/* Rating cue — "RATE" micro-label + blinking Minecraft stars, baked inside the embed */}
-            <div className="flex items-center justify-center gap-2.5 pb-2">
-              <span className="text-[7px] uppercase tracking-[0.24em] text-white/25 font-black leading-none" style={MINECRAFT}>Rate</span>
+            <div className="flex items-center justify-center gap-1.5 pb-1.5">
+              <span className="text-[6px] uppercase tracking-[0.22em] text-white/25 font-black leading-none" style={MINECRAFT}>Rate</span>
               {[0, 1, 2, 3, 4].map((i) => (
                 <span
                   key={i}
-                  className="text-white/30 animate-pulse"
-                  style={{ ...MINECRAFT, fontSize: '11px', animationDelay: `${i * 0.25}s`, animationDuration: '1.6s' }}
+                  className="text-white/30 animate-pulse leading-none"
+                  style={{ ...MINECRAFT, fontSize: '8px', animationDelay: `${i * 0.25}s`, animationDuration: '1.6s' }}
                 >
                   ★
                 </span>
