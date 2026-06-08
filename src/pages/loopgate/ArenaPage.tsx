@@ -1849,10 +1849,16 @@ export default function ArenaPage() {
                             })()}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
 
-                            {/* Badges: SOLO + slug — small, sharp, like duration/private badges */}
+                            {/* Badges — dark + sharp-edged with the rail's signature green accent, mirrors the embed HUD's corner-badge language instead of a flat sticker */}
                             <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between">
-                              <span className="text-[7px] font-black uppercase tracking-[0.16em] px-1.5 py-0.5 leading-none bg-white text-black" style={{ fontFamily: 'Teko, sans-serif' }}>Solo</span>
-                              <span className="text-[7px] font-mono uppercase tracking-wider px-1.5 py-0.5 leading-none" style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.65)' }}>{s.slug.toUpperCase()}</span>
+                              <span className="flex items-center gap-1 pl-1 pr-1.5 py-[3px] leading-none" style={{ background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(4px)', borderLeft: '2px solid #3BCB6B' }}>
+                                <UserRound className="w-2 h-2" style={{ color: '#3BCB6B' }} strokeWidth={3} />
+                                <span className="text-[7px] font-black uppercase tracking-[0.16em] text-white" style={{ fontFamily: 'Teko, sans-serif' }}>Solo</span>
+                              </span>
+                              <span className="flex items-center gap-1 pl-1.5 pr-1 py-[3px] leading-none" style={{ background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(4px)', borderRight: '2px solid #3BCB6B' }}>
+                                <span className="text-[6px] uppercase tracking-[0.14em] text-white/35 font-bold">Room</span>
+                                <span className="text-[7px] font-mono font-black uppercase tracking-wider text-white">{s.slug.toUpperCase()}</span>
+                              </span>
                             </div>
 
                             {/* Title */}
