@@ -269,25 +269,21 @@ export default function SoloSharePage() {
       };
 
       // "RATE" micro-label + 5 small grey "blinking" stars — mirrors the on-screen Minecraft cue
-      const drawRatingCue = (cx: number, cy: number) => {
+      const drawRatingCue = (x: number, cy: number) => {
         const spacing = 12;
         const gap = 7;
-        ctx.font = '900 6px Minecraft, monospace';
-        const labelW = ctx.measureText('RATE').width;
-        const starsSpan = spacing * 4;
-        const startX = cx - (labelW + gap + starsSpan) / 2;
-
         ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
-        ctx.fillText('RATE', startX, cy);
+        ctx.font = '900 6px Minecraft, monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillText('RATE', x, cy);
+        const labelW = ctx.measureText('RATE').width;
 
-        const starsStartX = startX + labelW + gap;
+        const starsStartX = x + labelW + gap;
         const t = performance.now() / 1000;
-        ctx.font = '900 8px Minecraft, monospace';
-        ctx.textAlign = 'center';
+        ctx.font = '900 9px Minecraft, monospace';
         for (let i = 0; i < 5; i++) {
           const wave = (Math.sin(((t - i * 0.25) / 1.6) * Math.PI * 2) + 1) / 2;
-          ctx.fillStyle = `rgba(255,255,255,${(0.15 + wave * 0.18).toFixed(2)})`;
+          ctx.fillStyle = `rgba(255,255,255,${(0.25 + wave * 0.25).toFixed(2)})`;
           ctx.fillText('★', starsStartX + i * spacing, cy);
         }
       };
@@ -325,18 +321,18 @@ export default function SoloSharePage() {
         ctx.fillText(codeText, roomBadgeX + 7 + roomLabelW + 5, 10 + badgeH / 2 + 1);
 
         // Bottom "now playing" bar — live, tracks real playback progress
+        const cueH = 16;
         const rowH = 38;
-        const starsRowH = 16;
-        const barH = rowH + starsRowH;
+        const barH = rowH;
         const barY = H - barH;
         const midY = barY + rowH / 2;
-        const starY = barY + rowH + starsRowH / 2;
+        const cueY = barY - cueH / 2 - 2;
 
         ctx.fillStyle = '#000';
         ctx.fillRect(0, barY, W, barH);
 
         // Editor avatar + username + session length
-        const tile = 24, tileX = 12, tileY = barY + (barH - starsRowH - tile) / 2;
+        const tile = 24, tileX = 12, tileY = barY + (barH - tile) / 2;
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.fillRect(tileX, tileY, tile, tile);
         ctx.strokeStyle = 'rgba(255,255,255,0.15)';
@@ -379,8 +375,8 @@ export default function SoloSharePage() {
         drawIconSong(W - 56, iconY);
         drawIconScenepack(W - 34, iconY);
 
-        // Rating cue — "RATE" label + small grey blinking stars, baked inside the embed
-        drawRatingCue(W / 2, starY + 1);
+        // Rating cue — floats just above the bar, beside the editor identity, at ~50% opacity
+        drawRatingCue(tileX, cueY);
       };
 
       const draw = () => {
@@ -590,8 +586,22 @@ export default function SoloSharePage() {
           </div>
 
           {/* Live "now playing" bar — tracks real playback progress, baked into the downloaded edit */}
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none bg-black border-t border-white/10">
-            <div className="flex items-center gap-2 px-2.5 py-1.5">
+          <div className="absolute inset-x-0 bottom-0 pointer-events-none flex flex-col">
+            {/* Rating cue — floats just above the bar, beside the editor identity, at 50% opacity */}
+            <div className="flex items-center gap-1.5 px-2.5 pb-1 opacity-50">
+              <span className="text-[6px] uppercase tracking-[0.22em] text-white font-black leading-none" style={MINECRAFT}>Rate</span>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span
+                  key={i}
+                  className="text-white animate-pulse leading-none"
+                  style={{ ...MINECRAFT, fontSize: '9px', animationDelay: `${i * 0.25}s`, animationDuration: '1.6s' }}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+
+            <div className="bg-black border-t border-white/10 flex items-center gap-2 px-2.5 py-1.5">
               {/* Editor avatar + username + session length */}
               <div className="flex items-center gap-1.5 min-w-0 shrink-0" style={{ width: '38%' }}>
                 {share.avatar_url ? (
@@ -622,20 +632,6 @@ export default function SoloSharePage() {
                 <Music className="w-3 h-3" />
                 <Film className="w-3 h-3" />
               </div>
-            </div>
-
-            {/* Rating cue — "RATE" micro-label + blinking Minecraft stars, baked inside the embed */}
-            <div className="flex items-center justify-center gap-1.5 pb-1.5">
-              <span className="text-[6px] uppercase tracking-[0.22em] text-white/25 font-black leading-none" style={MINECRAFT}>Rate</span>
-              {[0, 1, 2, 3, 4].map((i) => (
-                <span
-                  key={i}
-                  className="text-white/30 animate-pulse leading-none"
-                  style={{ ...MINECRAFT, fontSize: '8px', animationDelay: `${i * 0.25}s`, animationDuration: '1.6s' }}
-                >
-                  ★
-                </span>
-              ))}
             </div>
           </div>
         </div>
