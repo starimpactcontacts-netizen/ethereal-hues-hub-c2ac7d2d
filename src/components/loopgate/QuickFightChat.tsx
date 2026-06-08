@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Image as ImageIcon, Swords, MessageSquare, Reply, Camera, Loader2, X, ChevronUp, Pencil, Plus, Check, RotateCcw } from 'lucide-react';
+import { Send, Image as ImageIcon, Swords, MessageSquare, Reply, Camera, Loader2, X, ChevronUp, Pencil, Plus, Check, RotateCcw, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -166,6 +166,11 @@ export default function QuickFightChat({
     const previewText = isMediaUrl(msg.message_text) ? '📷 Photo' : msg.message_text.slice(0, 60);
     setReplyTo({ id: msg.id, username: msg.username, text: previewText });
     inputRef.current?.focus();
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    const { error } = await supabase.from('quick_fight_messages').delete().eq('id', messageId);
+    if (error) toast.error('Failed to delete message');
   };
 
   const getColor = (userId: string) => {
@@ -352,15 +357,26 @@ export default function QuickFightChat({
                       </ChatBubble>
                     )}
 
-                    {/* Reply button — shows on hover */}
+                    {/* Reply / delete — show on hover */}
                     {user && (
-                      <button
-                        onClick={() => handleReply(msg)}
-                        className="absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-zinc-500 hover:text-zinc-300"
-                        title="Reply"
-                      >
-                        <Reply className="w-3 h-3 rotate-180" />
-                      </button>
+                      <div className="absolute -right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleReply(msg)}
+                          className="p-1 text-zinc-500 hover:text-zinc-300"
+                          title="Reply"
+                        >
+                          <Reply className="w-3 h-3 rotate-180" />
+                        </button>
+                        {user.id === msg.user_id && (
+                          <button
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="p-1 text-zinc-500 hover:text-red-400"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     )}
                   </QuickFightBubbleShell>
 

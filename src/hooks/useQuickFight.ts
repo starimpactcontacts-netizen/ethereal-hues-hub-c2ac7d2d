@@ -332,6 +332,9 @@ export function useQuickFightMessages(fightId: string | undefined) {
       .channel(`qf_msgs_${fightId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'quick_fight_messages', filter: `fight_id=eq.${fightId}` },
         (payload) => { setMessages(prev => [...prev, payload.new as unknown as QuickFightMessage]); }
+      )
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'quick_fight_messages', filter: `fight_id=eq.${fightId}` },
+        (payload) => { setMessages(prev => prev.filter(m => m.id !== (payload.old as { id: string }).id)); }
       ).subscribe();
 
     return () => { supabase.removeChannel(channel); };
