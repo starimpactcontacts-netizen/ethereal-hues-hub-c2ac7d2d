@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, Film, X, Download, ChevronRight } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, AlertTriangle, Music, Film, X, Download, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
@@ -39,9 +39,17 @@ export default function SoloSharePage() {
   const progressHandleRef = useRef<HTMLDivElement>(null);
   const [videoAspect, setVideoAspect] = useState<number | null>(null);
 
+  // "Already rated" must be account-aware — a stale localStorage flag from a different
+  // login (or an earlier test) on the same browser would otherwise wrongly lock out a
+  // fresh account. Logged-in users are checked against the real rating records; only
+  // anonymous raters (who have no account to verify against) fall back to localStorage.
   useEffect(() => {
-    if (slug && localStorage.getItem(RATED_KEY(slug))) setAlreadyRated(true);
-  }, [slug]);
+    if (user) {
+      setAlreadyRated(ratings.some(r => r.rater_user_id === user.id));
+    } else if (slug) {
+      setAlreadyRated(!!localStorage.getItem(RATED_KEY(slug)));
+    }
+  }, [user, ratings, slug]);
 
   // Fetch editor profile for HUD
   useEffect(() => {
@@ -479,20 +487,16 @@ export default function SoloSharePage() {
       </div>
 
       <main className="relative flex-1 overflow-y-auto overscroll-contain w-full max-w-xl mx-auto px-4 pb-24" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
-        {/* Header */}
+        {/* Header — trimmed down: the embed itself already carries identity, room code & session, so this surfaces only what isn't baked in: title, overall rating, caption, song */}
         <div className="pt-5 pb-4">
-          <div className="flex items-center gap-3">
-            {share.avatar_url ? (
-              <img src={share.avatar_url} alt={share.username} className="w-11 h-11 rounded-full object-cover border border-white/[0.08]" />
-            ) : (
-              <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-black border border-white/[0.08]" style={{ background: '#111114' }}>
-                {share.username.slice(0, 1).toUpperCase()}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
               <div className="text-[9px] uppercase tracking-[0.24em] text-white/30 font-black" style={TEKO}>Solo Edit</div>
-              <Link to={`/u/${share.username}`} className="text-[15px] font-black hover:underline truncate block text-white/90">
-                @{share.username}
+              {share.title && (
+                <h1 className="text-3xl font-bold leading-[0.95] italic tracking-tight uppercase mt-1" style={TEKO}>{share.title}</h1>
+              )}
+              <Link to={`/u/${share.username}`} className="text-[12px] font-bold text-white/40 hover:text-white/70 hover:underline mt-1.5 inline-block truncate">
+                by @{share.username}
               </Link>
             </div>
             <div className="text-right shrink-0">
@@ -508,38 +512,26 @@ export default function SoloSharePage() {
             </div>
           </div>
 
-          {share.title && (
-            <h1 className="text-3xl font-bold leading-[0.95] italic tracking-tight uppercase mt-4" style={TEKO}>{share.title}</h1>
-          )}
           {share.caption && !/^https?:\/\//i.test(share.caption.trim()) && (
             <p className="text-sm text-white/60 mt-2 whitespace-pre-wrap">{share.caption}</p>
           )}
 
-          {/* Room code + session badges — sharp dark chips */}
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-white/[0.08]" style={{ background: '#111114' }}>
-              <span className="text-[8px] uppercase tracking-[0.2em] text-white/30 font-black" style={TEKO}>Room</span>
-              <span className="font-mono text-[12px] font-bold tracking-[0.2em] text-white/80">{share.slug.toUpperCase()}</span>
+          {(share.is_overtime || share.song_name) && (
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {share.is_overtime && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-amber-500/30 bg-amber-500/[0.08] text-amber-300 text-[9px] uppercase tracking-[0.18em] font-black" style={TEKO}>
+                  <AlertTriangle className="w-3 h-3" />
+                  Overtime
+                </span>
+              )}
+              {share.song_name && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.08] text-[9px] uppercase tracking-[0.18em] text-white/50 font-black" style={{ ...TEKO, background: '#111114' }}>
+                  <Music className="w-3 h-3 text-gold" />
+                  {share.song_name}
+                </span>
+              )}
             </div>
-            {share.timer_minutes && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.08] text-[9px] uppercase tracking-[0.18em] text-white/50 font-black" style={{ ...TEKO, background: '#111114' }}>
-                <Clock className="w-3 h-3 text-gold" />
-                {share.timer_minutes >= 60 ? `${share.timer_minutes / 60}h` : `${share.timer_minutes}m`} session
-              </span>
-            )}
-            {share.is_overtime && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-amber-500/30 bg-amber-500/[0.08] text-amber-300 text-[9px] uppercase tracking-[0.18em] font-black" style={TEKO}>
-                <AlertTriangle className="w-3 h-3" />
-                Overtime
-              </span>
-            )}
-            {share.song_name && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.08] text-[9px] uppercase tracking-[0.18em] text-white/50 font-black" style={{ ...TEKO, background: '#111114' }}>
-                <Music className="w-3 h-3 text-gold" />
-                {share.song_name}
-              </span>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Player — sized to the edit's native aspect ratio (9:16, 3:4, 1:1, etc.) so nothing gets cropped or stretched */}
