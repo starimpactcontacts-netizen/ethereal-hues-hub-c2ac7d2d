@@ -708,16 +708,19 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Feedback count + an encouraging earnings line instead of a flat "Rings" stat */}
+        {/* Feedback count + (owner-only) Rings earned — short, no wall of text */}
         <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] px-3.5 py-3" style={{ background: '#111114' }}>
           <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/40 tabular-nums shrink-0" style={TEKO}>
             <MessageCircle className="w-3.5 h-3.5 text-white/30" />
             {ratings.length}
             <span className="text-[8px] uppercase tracking-[0.2em] text-white/25 font-black">feedback</span>
           </span>
-          <span className="text-[11px] text-white/45 text-right leading-snug">
-            This edit has now earned the editor <span className="font-black" style={{ color: '#3BCB6B' }}>${share.rings_earned}</span> in Rings — keep the ratings rolling in
-          </span>
+          {isOwner && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-black tabular-nums shrink-0" style={TEKO}>
+              <span style={{ color: '#3BCB6B' }}>${share.rings_earned}</span>
+              <span className="text-[8px] uppercase tracking-[0.2em] text-white/25 font-black">earned</span>
+            </span>
+          )}
         </div>
 
         {/* Rating block */}
