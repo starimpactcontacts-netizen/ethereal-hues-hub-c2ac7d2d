@@ -33,7 +33,7 @@ export default function EnterpriseDashboard() {
             Welcome, {profile?.username || 'Client'}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage your campaigns and connect with elite editors
+            Manage your campaigns and find elite editors
           </p>
         </div>
       </div>
