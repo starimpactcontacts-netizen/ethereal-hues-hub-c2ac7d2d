@@ -128,10 +128,15 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
   const handleDelete = async (msgId: string) => {
     const prev = messages;
     setMessages((m) => m.filter((x) => x.id !== msgId));
-    const { error } = await supabase.from("battle_messages").delete().eq("id", msgId);
+    const { error, data } = await supabase.from("battle_messages").delete().eq("id", msgId).select();
     if (error) {
-      toast.error("Failed to delete");
+      toast.error("Failed to delete: " + error.message);
       setMessages(prev);
+    } else if (!data || data.length === 0) {
+      toast.error("Could not delete (not allowed)");
+      setMessages(prev);
+    } else {
+      toast.success("Deleted");
     }
   };
 
