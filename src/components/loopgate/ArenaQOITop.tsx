@@ -302,7 +302,7 @@ export default function ArenaQOITop() {
                       return <Minus className="w-2.5 h-2.5 text-muted-foreground/30" strokeWidth={3} />;
                     })()}
                     {tab === 'qoi' && row.best_gatekeeper_qoi ? (
-                      <span className="text-[9px] text-purple-300/80 font-bold font-mono tracking-wider">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
+                      <span className="text-[9px] text-gold/80 font-bold font-mono tracking-wider">QOI {Number(row.best_gatekeeper_qoi).toFixed(1)}</span>
                     ) : null}
                     {tab !== 'qoi' && (
                       <span className="text-[9px] text-muted-foreground/60 font-bold font-mono tracking-wider uppercase">
