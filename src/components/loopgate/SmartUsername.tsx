@@ -1,6 +1,6 @@
 import React from "react";
 import AuraUsername from "./AuraUsername";
-import { useAura, useAuraByUsername } from "@/lib/auraCache";
+import { useAura, useAuraByUsername, useAuraTint } from "@/lib/auraCache";
 
 interface Props {
   userId?: string | null;
@@ -19,10 +19,12 @@ export default function SmartUsername({ userId, username, prefix = "", aura, cla
   const cached = useAura(userId);
   const cachedByUsername = useAuraByUsername(userId ? null : username);
   const effective = aura ?? cached ?? cachedByUsername;
+  const tint = useAuraTint(userId, effective ?? undefined);
   return (
     <AuraUsername
       username={`${prefix}${username}`}
       aura={effective ?? undefined}
+      tint={tint ?? undefined}
       className={className}
       style={style}
     />
