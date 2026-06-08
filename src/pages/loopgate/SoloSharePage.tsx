@@ -534,6 +534,24 @@ export default function SoloSharePage() {
           )}
         </div>
 
+        {/* Views + Download — small icon components sitting right over the edit, not bulky cards */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.07] text-[11px] font-black text-white/40 tabular-nums" style={{ ...TEKO, background: '#111114' }}>
+            <Eye className="w-3.5 h-3.5 text-white/30" />
+            {share.views}
+            <span className="text-[8px] uppercase tracking-[0.2em] text-white/25 font-black">views</span>
+          </span>
+          <button
+            onClick={handleDownloadVideo}
+            disabled={downloading}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-white/[0.07] text-[10px] font-black uppercase tracking-[0.16em] active:scale-95 transition-all disabled:opacity-50"
+            style={{ ...TEKO, background: '#111114', color: '#3BCB6B' }}
+          >
+            {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            {downloading ? 'Baking…' : 'Download'}
+          </button>
+        </div>
+
         {/* Player — sized to the edit's native aspect ratio (9:16, 3:4, 1:1, etc.) so nothing gets cropped or stretched */}
         <div
           className="relative w-full overflow-hidden border border-white/[0.08]"
@@ -690,41 +708,17 @@ export default function SoloSharePage() {
           </div>
         </div>
 
-        {/* Stats strip — dark surfaces, $R currency convention */}
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <div className="rounded-xl px-3 py-2.5 flex flex-col items-center gap-1 border border-white/[0.07]" style={{ background: '#111114' }}>
-            <span className="flex items-center gap-1 text-[15px] font-black tabular-nums leading-none" style={TEKO}>
-              <Eye className="w-3.5 h-3.5 text-white/30" />{share.views}
-            </span>
-            <span className="text-[8px] text-white/35 uppercase tracking-[0.22em] font-black leading-none" style={TEKO}>Views</span>
-          </div>
-          <div className="rounded-xl px-3 py-2.5 flex flex-col items-center gap-1 border border-white/[0.07]" style={{ background: '#111114' }}>
-            <span className="flex items-center gap-1 text-[15px] font-black tabular-nums leading-none" style={TEKO}>
-              <MessageCircle className="w-3.5 h-3.5 text-white/30" />{ratings.filter(r => r.comment).length}
-            </span>
-            <span className="text-[8px] text-white/35 uppercase tracking-[0.22em] font-black leading-none" style={TEKO}>Feedback</span>
-          </div>
-          <div className="rounded-xl px-3 py-2.5 flex flex-col items-center gap-1 border border-white/[0.07]" style={{ background: '#111114' }}>
-            <span className="text-[15px] font-black tabular-nums leading-none" style={TEKO}>
-              <span style={{ color: '#3BCB6B' }}>$</span>{share.rings_earned}
-            </span>
-            <span className="text-[8px] text-white/35 uppercase tracking-[0.22em] font-black leading-none" style={TEKO}>Rings</span>
-          </div>
+        {/* Feedback count + an encouraging earnings line instead of a flat "Rings" stat */}
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] px-3.5 py-3" style={{ background: '#111114' }}>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/40 tabular-nums shrink-0" style={TEKO}>
+            <MessageCircle className="w-3.5 h-3.5 text-white/30" />
+            {ratings.length}
+            <span className="text-[8px] uppercase tracking-[0.2em] text-white/25 font-black">feedback</span>
+          </span>
+          <span className="text-[11px] text-white/45 text-right leading-snug">
+            This edit has now earned the editor <span className="font-black" style={{ color: '#3BCB6B' }}>${share.rings_earned}</span> in Rings — keep the ratings rolling in
+          </span>
         </div>
-
-        {/* Download CTA — Rings-green accent, matching Solo's currency tone */}
-        <button
-          onClick={handleDownloadVideo}
-          disabled={downloading}
-          className="relative mt-3 w-full overflow-hidden rounded-2xl border border-white/[0.07] active:scale-[0.985] transition-transform disabled:opacity-50"
-          style={{ background: 'linear-gradient(180deg, #1a1a1e 0%, #0d0d10 100%)' }}
-        >
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #3BCB6B, transparent 60%)' }} />
-          <div className="relative px-4 py-3.5 flex items-center justify-center gap-2">
-            {downloading ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#3BCB6B' }} /> : <Download className="w-4 h-4" style={{ color: '#3BCB6B' }} />}
-            <span className="text-[13px] font-black uppercase tracking-[0.16em]" style={TEKO}>{downloading ? 'Baking…' : 'Download Edit'}</span>
-          </div>
-        </button>
 
         {/* Rating block */}
         <section className="relative mt-6 rounded-2xl overflow-hidden border border-white/[0.07] p-4" style={{ background: 'linear-gradient(180deg, #18181b 0%, #0e0e10 100%)' }}>
