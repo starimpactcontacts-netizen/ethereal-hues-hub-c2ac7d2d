@@ -185,8 +185,9 @@ export default function SoloSharePage() {
       return;
     }
     setDownloading(true);
-    const loadingToast = toast.loading('Baking HUD onto your edit…');
+    const loadingToast = toast.loading('Rendering your edit…');
     let cleanupHls: (() => void) | null = null;
+    let actx: AudioContext | null = null;
     let rafId = 0;
     const video = document.createElement('video');
     video.muted = false;
@@ -204,7 +205,7 @@ export default function SoloSharePage() {
 
       // Match the canvas to the edit's native aspect ratio (9:16, 3:4, 1:1, etc.) — never force-crop to square
       const vw0 = video.videoWidth || 720, vh0 = video.videoHeight || 720;
-      const maxDim = 1080;
+      const maxDim = 1920;
       const exportScale = Math.min(1, maxDim / Math.max(vw0, vh0));
       const W = Math.round(vw0 * exportScale), H = Math.round(vh0 * exportScale);
       const canvas = document.createElement('canvas');
@@ -232,18 +233,22 @@ export default function SoloSharePage() {
       }
 
       const stream = canvas.captureStream(30);
-      // Try to pipe audio
+      // Pipe real audio into the export — video.captureStream().getAudioTracks()
+      // routinely comes back empty for HLS/MSE-backed sources (which is why
+      // downloads were silent). Tapping the element through the Web Audio graph
+      // is the reliable path; it also keeps the render from playing out loud
+      // over the page while it's baking.
       try {
-        const audioStream = (video as any).captureStream?.() || (video as any).mozCaptureStream?.();
-        if (audioStream) {
-          audioStream.getAudioTracks().forEach((t: MediaStreamTrack) => stream.addTrack(t));
-        }
+        actx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioDest = actx.createMediaStreamDestination();
+        actx.createMediaElementSource(video).connect(audioDest);
+        audioDest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
       } catch {}
 
       const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
         ? 'video/webm;codecs=vp9,opus'
         : (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm');
-      const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_500_000 });
+      const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000, audioBitsPerSecond: 160_000 });
       const chunks: Blob[] = [];
       recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
 
@@ -431,13 +436,14 @@ export default function SoloSharePage() {
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
       toast.dismiss(loadingToast);
-      toast.success('Edit downloaded with HUD baked in.');
+      toast.success('Download ready — audio and overlay included.');
     } catch (e: any) {
       console.error('[Solo video export]', e);
       toast.dismiss(loadingToast);
       toast.error('Video export failed. Try the card download instead.');
     } finally {
       try { cleanupHls?.(); } catch {}
+      try { actx?.close(); } catch {}
       cancelAnimationFrame(rafId);
       setDownloading(false);
     }
@@ -548,7 +554,7 @@ export default function SoloSharePage() {
             style={{ ...TEKO, background: '#111114', color: '#3BCB6B' }}
           >
             {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-            {downloading ? 'Baking…' : 'Download'}
+            {downloading ? 'Rendering…' : 'Download'}
           </button>
         </div>
 
