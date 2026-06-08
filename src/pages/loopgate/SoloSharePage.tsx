@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, ChevronRight } from 'lucide-react';
+import { Star, Send, ExternalLink, Loader2, Copy, Check, MessageCircle, Eye, Clock, AlertTriangle, Music, X, Download, ChevronRight, ListMusic, Volume2, Maximize2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSoloShareBySlug, submitSoloShareRating } from '@/hooks/useSoloShares';
 import { getEmbedUrl } from '@/lib/videoEmbed';
@@ -33,6 +33,7 @@ export default function SoloSharePage() {
   const [copied, setCopied] = useState(false);
   const [editorProfile, setEditorProfile] = useState<{ level: number; league: string; global_index_score: number } | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [playerProgress, setPlayerProgress] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -179,7 +180,7 @@ export default function SoloSharePage() {
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d')!;
 
-      // Preload brand mark for the embed bar
+      // Preload brand mark + cover art for the embed bar
       let logo: HTMLImageElement | null = new Image();
       logo.crossOrigin = 'anonymous';
       logo.src = loopgateLogo;
@@ -187,6 +188,18 @@ export default function SoloSharePage() {
         logo!.onload = () => res();
         logo!.onerror = () => { logo = null; res(); };
       });
+
+      let cover: HTMLImageElement | null = null;
+      const coverSrc = share.thumbnail_url || getBunnyThumbnail(share.video_url);
+      if (coverSrc) {
+        cover = new Image();
+        cover.crossOrigin = 'anonymous';
+        cover.src = coverSrc;
+        await new Promise<void>((res) => {
+          cover!.onload = () => res();
+          cover!.onerror = () => { cover = null; res(); };
+        });
+      }
 
       const stream = canvas.captureStream(30);
       // Try to pipe audio
@@ -208,71 +221,131 @@ export default function SoloSharePage() {
       const BLUE = '#3B82F6';
 
       const codeText = share.slug.toUpperCase();
+      const songText = (share.song_name || 'Original Audio').toUpperCase();
+      const sessionText = share.timer_minutes
+        ? `${share.timer_minutes >= 60 ? `${share.timer_minutes / 60}HR` : `${share.timer_minutes}MIN`} EDIT`
+        : 'SOLO EDIT';
+
+      // Tiny Spotify-style icon glyphs, drawn from primitives (queue / volume / expand)
+      const iconGray = 'rgba(255,255,255,0.35)';
+      const drawIconQueue = (x: number, y: number) => {
+        ctx.strokeStyle = iconGray; ctx.lineWidth = 1;
+        [[8, 0], [8, 3], [5, 6]].forEach(([len, dy]) => {
+          ctx.beginPath(); ctx.moveTo(x, y + dy); ctx.lineTo(x + len, y + dy); ctx.stroke();
+        });
+      };
+      const drawIconVolume = (x: number, y: number) => {
+        ctx.fillStyle = iconGray;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 2); ctx.lineTo(x + 2, y + 2); ctx.lineTo(x + 5, y - 1);
+        ctx.lineTo(x + 5, y + 7); ctx.lineTo(x + 2, y + 4); ctx.lineTo(x, y + 4);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = iconGray; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(x + 7, y + 3, 3.5, -0.6, 0.6); ctx.stroke();
+      };
+      const drawIconExpand = (x: number, y: number) => {
+        ctx.strokeStyle = iconGray; ctx.lineWidth = 1.25;
+        const s = 7;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 2); ctx.lineTo(x, y); ctx.lineTo(x + 2, y);
+        ctx.moveTo(x + s - 2, y); ctx.lineTo(x + s, y); ctx.lineTo(x + s, y + 2);
+        ctx.moveTo(x + s, y + s - 2); ctx.lineTo(x + s, y + s); ctx.lineTo(x + s - 2, y + s);
+        ctx.moveTo(x + 2, y + s); ctx.lineTo(x, y + s); ctx.lineTo(x, y + s - 2);
+        ctx.stroke();
+      };
 
       const drawHUD = () => {
+        ctx.textBaseline = 'middle';
+
+        // Corner badges — brand mark (Minecraft font, red edge) + room code (blue edge)
+        const badgeH = 20;
+        ctx.font = '900 11px Minecraft, monospace';
+        const brandW = ctx.measureText('LOOPGATE.GG').width + 16;
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(10, 10, brandW, badgeH);
+        ctx.fillStyle = RED;
+        ctx.fillRect(10, 10, 3, badgeH);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'left';
+        ctx.fillText('LOOPGATE.GG', 18, 10 + badgeH / 2 + 1);
+
+        ctx.font = '800 7px system-ui, -apple-system, sans-serif';
+        const roomLabelW = ctx.measureText('ROOM').width;
+        ctx.font = '900 10px ui-monospace, SFMono-Regular, Menlo, monospace';
+        const roomCodeW = ctx.measureText(codeText).width;
+        const roomBadgeW = roomLabelW + roomCodeW + 22;
+        const roomBadgeX = W - 10 - roomBadgeW;
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(roomBadgeX, 10, roomBadgeW, badgeH);
+        ctx.fillStyle = BLUE;
+        ctx.fillRect(roomBadgeX + roomBadgeW - 3, 10, 3, badgeH);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = '800 7px system-ui, -apple-system, sans-serif';
+        ctx.fillText('ROOM', roomBadgeX + 8, 10 + badgeH / 2 + 1);
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 10px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.fillText(codeText, roomBadgeX + 8 + roomLabelW + 6, 10 + badgeH / 2 + 1);
+
+        // Bottom "now playing" bar — live, tracks real playback progress
         const barH = 46;
         const barY = H - barH;
         const midY = barY + barH / 2;
 
-        // Thin red | blue accent line — clean competitive split
         ctx.fillStyle = RED;
         ctx.fillRect(0, barY - 3, W / 2, 3);
         ctx.fillStyle = BLUE;
         ctx.fillRect(W / 2, barY - 3, W / 2, 3);
 
-        // Bar background — flat black, sharp edges
         ctx.fillStyle = '#000';
         ctx.fillRect(0, barY, W, barH);
 
-        ctx.textBaseline = 'middle';
-
-        // Left: cover tile + now-playing-style two-line text (mirrors a music player's "art + title/artist")
+        // Cover art + song name + session length
         const tile = 28, tileX = 12, tileY = barY + (barH - tile) / 2;
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.fillRect(tileX, tileY, tile, tile);
         ctx.strokeStyle = 'rgba(255,255,255,0.15)';
         ctx.lineWidth = 1;
         ctx.strokeRect(tileX + 0.5, tileY + 0.5, tile - 1, tile - 1);
-        if (logo) {
-          try { ctx.drawImage(logo, tileX + 6, tileY + 6, tile - 12, tile - 12); } catch {}
+        if (cover) {
+          try { ctx.drawImage(cover, tileX, tileY, tile, tile); } catch {}
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.font = '12px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('♪', tileX + tile / 2, tileY + tile / 2 + 1);
         }
         ctx.textAlign = 'left';
         ctx.fillStyle = '#fff';
-        ctx.font = '700 11px Teko, system-ui, sans-serif';
-        ctx.fillText('LOOPGATE.GG', tileX + tile + 8, midY - 6);
+        ctx.font = '900 9px system-ui, -apple-system, sans-serif';
+        ctx.fillText(songText, tileX + tile + 8, midY - 6);
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.font = '800 7px system-ui, -apple-system, sans-serif';
-        ctx.fillText('TAP TO RATE THIS EDIT', tileX + tile + 8, midY + 6);
+        ctx.fillText(sessionText, tileX + tile + 8, midY + 6);
 
-        // Center: 5-star "transport row" over a seek-bar-style slider
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.font = '11px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'center';
-        for (let i = 0; i < 5; i++) {
-          ctx.fillText('☆', W / 2 + (i - 2) * 14, midY - 7);
-        }
-        const sliderW = 110, sliderX = W / 2 - sliderW / 2, sliderY = midY + 6, fillW = sliderW * 0.55;
+        // Live progress slider — fill + handle move with actual playback
+        const sliderX = tileX + tile + 150;
+        const sliderW = W - sliderX - 95;
+        const progress = maxDuration > 0 ? Math.min(1, Math.max(0, video.currentTime / maxDuration)) : 0;
+        const fillW = sliderW * progress;
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        ctx.fillRect(sliderX, sliderY, sliderW, 2);
-        const grad = ctx.createLinearGradient(sliderX, 0, sliderX + fillW, 0);
-        grad.addColorStop(0, RED);
-        grad.addColorStop(1, BLUE);
-        ctx.fillStyle = grad;
-        ctx.fillRect(sliderX, sliderY, fillW, 2);
+        ctx.fillRect(sliderX, midY - 1, sliderW, 2);
+        if (fillW > 0) {
+          const grad = ctx.createLinearGradient(sliderX, 0, sliderX + sliderW, 0);
+          grad.addColorStop(0, RED);
+          grad.addColorStop(1, BLUE);
+          ctx.fillStyle = grad;
+          ctx.fillRect(sliderX, midY - 1, fillW, 2);
+        }
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.arc(sliderX + fillW, sliderY + 1, 2.5, 0, Math.PI * 2);
+        ctx.arc(sliderX + fillW, midY, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Right: edit code
-        ctx.textAlign = 'right';
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.font = '800 7px system-ui, -apple-system, sans-serif';
-        ctx.fillText('CODE', W - 12, midY - 6);
-        ctx.fillStyle = BLUE;
-        ctx.font = '900 11px ui-monospace, SFMono-Regular, Menlo, monospace';
-        ctx.fillText(codeText, W - 12, midY + 6);
-        ctx.textAlign = 'left';
+        // Spotify-style icon cluster
+        const iconY = midY - 3;
+        drawIconQueue(W - 72, iconY);
+        drawIconVolume(W - 52, iconY);
+        drawIconExpand(W - 32, iconY);
       };
 
       const draw = () => {
@@ -336,6 +409,11 @@ export default function SoloSharePage() {
     backgroundSize: '20px 20px',
   };
   const TEKO = { fontFamily: 'Teko, sans-serif' };
+  const MINECRAFT = { fontFamily: 'Minecraft, monospace' };
+  const sessionLabel = share.timer_minutes
+    ? `${share.timer_minutes >= 60 ? `${share.timer_minutes / 60}HR` : `${share.timer_minutes}MIN`} EDIT`
+    : 'SOLO EDIT';
+  const coverArt = share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined;
 
   return (
     <div className="fixed inset-0 text-white flex flex-col overflow-hidden" style={{ background: '#0a0a0a' }}>
@@ -436,7 +514,17 @@ export default function SoloSharePage() {
         {/* Player */}
         <div className="relative w-full aspect-square overflow-hidden rounded-t-2xl border border-white/[0.08]" style={{ background: '#111114' }}>
           {share.platform === 'bunny' ? (
-            <BunnyVideo src={share.video_url} poster={share.thumbnail_url || getBunnyThumbnail(share.video_url) || undefined} className="absolute inset-0 w-full h-full object-cover" controls autoPlay={false} />
+            <BunnyVideo
+              src={share.video_url}
+              poster={coverArt}
+              className="absolute inset-0 w-full h-full object-cover"
+              controls
+              autoPlay={false}
+              onTimeUpdate={(e) => {
+                const v = e.currentTarget;
+                if (v.duration) setPlayerProgress(v.currentTime / v.duration);
+              }}
+            />
           ) : embedUrl ? (
             <iframe
               src={embedUrl}
@@ -459,41 +547,52 @@ export default function SoloSharePage() {
             </div>
           )}
 
-          {/* Universal embed — Spotify-style "now playing" bar: cover + title/subtitle, star "transport row" over a seek-bar slider, code on the right */}
+          {/* Corner badges — brand mark (Minecraft font) and room code, kept small so the bottom player owns the frame */}
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 pl-1.5 pr-2 py-1 bg-black/85 backdrop-blur-sm border-l-[3px] border-l-[#FF3B3B] pointer-events-none">
+            <GateIcon size={11} />
+            <span className="text-[10px] text-white tracking-wider leading-none" style={MINECRAFT}>LOOPGATE.GG</span>
+          </div>
+          <div className="absolute top-2 right-2 flex items-center gap-1.5 pl-2 pr-1.5 py-1 bg-black/85 backdrop-blur-sm border-r-[3px] border-r-[#3B82F6] pointer-events-none">
+            <span className="text-[7px] uppercase tracking-[0.15em] text-white/40 font-bold">Room</span>
+            <span className="text-[10px] font-mono font-black text-white tracking-[0.12em] leading-none">{share.slug.toUpperCase()}</span>
+          </div>
+
+          {/* Live "now playing" bar — tracks real playback progress, baked into the downloaded edit */}
           <div className="absolute inset-x-0 bottom-0 pointer-events-none">
             <div className="h-[3px] w-full flex">
               <div className="w-1/2 h-full bg-[#FF3B3B]" />
               <div className="w-1/2 h-full bg-[#3B82F6]" />
             </div>
-            <div className="flex items-center gap-3 px-2.5 py-2 bg-black border-t border-white/10">
-              {/* Left: cover tile + now-playing-style two-line text */}
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <div className="w-[26px] h-[26px] shrink-0 bg-white/[0.06] border border-white/15 flex items-center justify-center">
-                  <GateIcon size={16} />
-                </div>
+            <div className="flex items-center gap-2.5 px-2.5 py-2 bg-black border-t border-white/10">
+              {/* Cover art + song name + session length */}
+              <div className="flex items-center gap-2 min-w-0 shrink-0" style={{ width: '38%' }}>
+                {coverArt ? (
+                  <img src={coverArt} alt="" className="w-7 h-7 object-cover shrink-0 border border-white/15" />
+                ) : (
+                  <div className="w-7 h-7 shrink-0 bg-white/[0.06] border border-white/15 flex items-center justify-center">
+                    <Music className="w-3 h-3 text-white/30" />
+                  </div>
+                )}
                 <div className="leading-tight min-w-0">
-                  <div className="text-[9px] font-black text-white tracking-[0.15em] truncate" style={TEKO}>LOOPGATE.GG</div>
-                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/40 font-bold truncate">Tap To Rate This Edit</div>
+                  <div className="text-[9px] font-black text-white uppercase tracking-wider truncate">{share.song_name || 'Original Audio'}</div>
+                  <div className="text-[7px] uppercase tracking-[0.18em] text-white/40 font-bold truncate">{sessionLabel}</div>
                 </div>
               </div>
 
-              {/* Center: 5-star "transport row" over a seek-bar-style slider */}
-              <div className="flex flex-col items-center gap-[7px] shrink-0">
-                <div className="flex items-center gap-[4px]">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-3 h-3 text-white/40" strokeWidth={2.25} />
-                  ))}
-                </div>
-                <div className="relative w-[110px] h-[2px] bg-white/15">
-                  <div className="absolute inset-y-0 left-0" style={{ width: '55%', background: 'linear-gradient(90deg, #FF3B3B, #3B82F6)' }} />
-                  <div className="absolute top-1/2 left-[55%] -translate-y-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-white" />
-                </div>
+              {/* Live seek-bar — fill + handle move with actual playback */}
+              <div className="relative flex-1 h-[2px] bg-white/15">
+                <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, Math.max(0, playerProgress * 100))}%`, background: 'linear-gradient(90deg, #FF3B3B, #3B82F6)' }} />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full bg-white"
+                  style={{ left: `${Math.min(100, Math.max(0, playerProgress * 100))}%` }}
+                />
               </div>
 
-              {/* Right: edit code */}
-              <div className="flex flex-col items-end leading-tight flex-1 min-w-0">
-                <span className="text-[7px] uppercase tracking-[0.15em] text-white/40 font-bold">Code</span>
-                <span className="text-[10px] font-mono font-black text-[#3B82F6] tracking-[0.12em] truncate">{share.slug.toUpperCase()}</span>
+              {/* Spotify-style icon cluster */}
+              <div className="flex items-center gap-1.5 shrink-0 text-white/35">
+                <ListMusic className="w-3 h-3" />
+                <Volume2 className="w-3 h-3" />
+                <Maximize2 className="w-3 h-3" />
               </div>
             </div>
           </div>
