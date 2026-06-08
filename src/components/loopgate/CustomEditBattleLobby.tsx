@@ -24,8 +24,10 @@ interface CustomEditBattleLobbyProps {
   onSongPicked?: (drop: any) => Promise<void>;
 }
 
-const P1_COLOR = "#1d6fff";
-const P2_COLOR = "#cc1111";
+// P1 = RED, P2 = BLUE — matches the convention used everywhere else in
+// Quick Fight (chat name/bubble colors, "(RED)"/"(BLUE)" labels, BattleSelectionsBanner).
+const P1_COLOR = "#cc1111";
+const P2_COLOR = "#1d6fff";
 
 const stripeStyle = {
   backgroundImage:
@@ -232,7 +234,7 @@ export default function CustomEditBattleLobby({
                     <AvatarImage src={fight.player_1_avatar_url || ""} className="object-cover w-full h-full" />
                     <AvatarFallback
                       className="rounded-none text-3xl font-black"
-                      style={{ backgroundColor: "#050d1f", color: P1_COLOR, fontFamily: "Teko, sans-serif" }}
+                      style={{ backgroundColor: "#160000", color: P1_COLOR, fontFamily: "Teko, sans-serif" }}
                     >
                       {fight.player_1_username?.charAt(0)?.toUpperCase()}
                     </AvatarFallback>
@@ -259,7 +261,7 @@ export default function CustomEditBattleLobby({
                 className="text-[62px] leading-none font-black text-white block"
                 style={{
                   fontFamily: "Teko, sans-serif",
-                  textShadow: `2px 2px 0 ${P2_COLOR}, 3px 3px 0 #660000`,
+                  textShadow: `2px 2px 0 ${P1_COLOR}, 3px 3px 0 #660000`,
                 }}
               >
                 VS
@@ -284,7 +286,7 @@ export default function CustomEditBattleLobby({
                       <AvatarImage src={fight.player_2_avatar_url || ""} className="object-cover w-full h-full" />
                       <AvatarFallback
                         className="rounded-none text-3xl font-black"
-                        style={{ backgroundColor: "#160000", color: P2_COLOR, fontFamily: "Teko, sans-serif" }}
+                        style={{ backgroundColor: "#050d1f", color: P2_COLOR, fontFamily: "Teko, sans-serif" }}
                       >
                         {fight.player_2_username?.charAt(0)?.toUpperCase()}
                       </AvatarFallback>
@@ -293,7 +295,7 @@ export default function CustomEditBattleLobby({
                 ) : (
                   <div
                     className="w-[96px] h-[96px] border-[3px] flex items-center justify-center"
-                    style={{ borderColor: P2_COLOR, backgroundColor: "#160000" }}
+                    style={{ borderColor: P2_COLOR, backgroundColor: "#050d1f" }}
                   >
                     <motion.span
                       animate={{ opacity: [1, 0.2, 1] }}
