@@ -296,16 +296,16 @@ function InventoryCard({
   const categoryLabel = isAura ? "Aura" : isBubble ? "Chat Bubble" : item.item?.category === "badge" ? "Badge" : item.item?.category === "skin" ? "Skin" : item.item?.item_type || "Item";
 
   return (
-    <motion.button
-      onClick={onToggle}
-      disabled={toggling}
+    <motion.div
       whileTap={{ scale: 0.96 }}
       className={cn(
-        "flex flex-col items-center text-center rounded-xl border p-3 transition-all relative overflow-hidden",
+        "flex flex-col items-center text-center rounded-xl border p-3 transition-all relative overflow-hidden cursor-pointer select-none",
+        toggling && "opacity-60",
         item.is_equipped
           ? "bg-primary/5 border-primary/30"
           : "bg-surface-1 border-border hover:border-foreground/20"
       )}
+      onClick={() => { if (!toggling) onToggle(); }}
     >
       {/* Equipped indicator */}
       {item.is_equipped && (
@@ -382,6 +382,6 @@ function InventoryCard({
           })}
         </div>
       )}
-    </motion.button>
+    </motion.div>
   );
 }
