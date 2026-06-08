@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS aura_tints JSONB NOT NULL DEFAULT '{}'::jsonb;
