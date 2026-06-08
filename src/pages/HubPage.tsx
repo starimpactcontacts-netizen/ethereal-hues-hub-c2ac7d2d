@@ -664,15 +664,11 @@ export default function HubPage() {
                         </h1>
                         {hasEquippedOG && <FoundingBadge size="sm" animate={false} />}
                       </div>
-                      {/* Class crest + slanted league tag — tucked right under the name, raised plate for depth */}
+                      {/* Class crest + slanted league tag — tucked right under the name, drop-shadow for depth (no plate) */}
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate('/class'); }}
-                        className="flex items-center gap-1 mt-0.5 -ml-1 pl-1 pr-2.5 py-0.5 rounded-md active:opacity-70 active:scale-[0.97] transition-all"
-                        style={{
-                          background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.35) 100%), #17171c',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 10px rgba(0,0,0,0.5)',
-                        }}
+                        className="flex items-center gap-1 mt-0.5 active:opacity-70 transition-opacity"
+                        style={{ filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.55))' }}
                       >
                         <ClassBadge rank={classLetter} size={42} />
                         <span
@@ -683,7 +679,7 @@ export default function HubPage() {
                             color: '#ffffff',
                             transform: 'skewX(-12deg)',
                             display: 'inline-block',
-                            textShadow: '0 2px 0 rgba(0,0,0,0.55)',
+                            textShadow: '0 1px 0 rgba(255,255,255,0.25), 0 3px 0 rgba(0,0,0,0.6), 0 6px 10px rgba(0,0,0,0.5)',
                             WebkitTextStroke: '0.5px rgba(0,0,0,0.6)',
                             paintOrder: 'stroke fill',
                           }}
