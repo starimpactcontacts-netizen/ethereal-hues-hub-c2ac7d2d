@@ -726,9 +726,6 @@ export default function SoloSharePage() {
             <span className="text-[13px] font-black uppercase tracking-[0.16em]" style={TEKO}>{downloading ? 'Baking…' : 'Download Edit'}</span>
           </div>
         </button>
-        <p className="mt-1.5 text-[10px] text-white/30 text-center">
-          Bakes the Valorant-style HUD onto your video. Up to 60s, .webm format.
-        </p>
 
         {/* Rating block */}
         <section className="relative mt-6 rounded-2xl overflow-hidden border border-white/[0.07] p-4" style={{ background: 'linear-gradient(180deg, #18181b 0%, #0e0e10 100%)' }}>
