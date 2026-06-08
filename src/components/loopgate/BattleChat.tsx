@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, Lock, Reply, Flame, Camera, Loader2 } from "lucide-react";
+import { Send, MessageSquare, Lock, Reply, Flame, Camera, Loader2, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -98,6 +98,18 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "battle_messages",
+        },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setMessages((prev) => prev.filter((m) => m.id !== deletedId));
+        }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -111,6 +123,16 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     const previewText = isMediaUrl(msg.message_text) ? "📷 Photo" : msg.message_text.slice(0, 60);
     setReplyTo({ id: msg.id, username: msg.username, text: previewText });
     inputRef.current?.focus();
+  };
+
+  const handleDelete = async (msgId: string) => {
+    const prev = messages;
+    setMessages((m) => m.filter((x) => x.id !== msgId));
+    const { error } = await supabase.from("battle_messages").delete().eq("id", msgId);
+    if (error) {
+      toast.error("Failed to delete");
+      setMessages(prev);
+    }
   };
 
   const handleMention = (username: string) => {
@@ -344,14 +366,28 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                   )}
                 </div>
 
-                {/* Reply button on hover */}
+                {/* Action buttons */}
                 {user && (
-                  <button
-                    onClick={() => handleReply(msg)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-white/20 hover:text-white/50"
-                  >
-                    <Reply className="w-3 h-3 rotate-180" />
-                  </button>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 z-10">
+                    <button
+                      onClick={() => handleReply(msg)}
+                      className="p-1.5 text-white/40 hover:text-white/80 active:text-white"
+                      aria-label="Reply"
+                    >
+                      <Reply className="w-4 h-4 rotate-180" />
+                    </button>
+                    {msg.user_id === user.id && (
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this message for everyone?")) handleDelete(msg.id);
+                        }}
+                        className="p-1.5 text-red-400/80 hover:text-red-400 active:text-red-500"
+                        aria-label="Delete message"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 )}
               </motion.div>
             );
