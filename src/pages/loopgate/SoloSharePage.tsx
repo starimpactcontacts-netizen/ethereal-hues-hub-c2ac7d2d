@@ -33,8 +33,10 @@ export default function SoloSharePage() {
   const [copied, setCopied] = useState(false);
   const [editorProfile, setEditorProfile] = useState<{ level: number; league: string; global_index_score: number } | null>(null);
   const [downloading, setDownloading] = useState(false);
-  const [playerProgress, setPlayerProgress] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
+  const playerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const progressFillRef = useRef<HTMLDivElement>(null);
+  const progressHandleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (slug && localStorage.getItem(RATED_KEY(slug))) setAlreadyRated(true);
@@ -50,6 +52,23 @@ export default function SoloSharePage() {
       .maybeSingle()
       .then(({ data }) => { if (data) setEditorProfile(data as any); });
   }, [share?.user_id]);
+
+  // Drive the now-playing seek bar straight off the video's currentTime every frame —
+  // smoother than React state + the ~4Hz `timeupdate` event, which visibly steps.
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const v = playerVideoRef.current;
+      if (v && v.duration) {
+        const pct = `${Math.min(100, Math.max(0, (v.currentTime / v.duration) * 100))}%`;
+        if (progressFillRef.current) progressFillRef.current.style.width = pct;
+        if (progressHandleRef.current) progressHandleRef.current.style.left = pct;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   // Bump views once per page load (best-effort, non-owner)
   useEffect(() => {
@@ -522,15 +541,12 @@ export default function SoloSharePage() {
         <div className="relative w-full aspect-square overflow-hidden border border-white/[0.08]" style={{ background: '#111114' }}>
           {share.platform === 'bunny' ? (
             <BunnyVideo
+              ref={playerVideoRef}
               src={share.video_url}
               poster={coverArt}
               className="absolute inset-0 w-full h-full object-cover"
               controls
               autoPlay={false}
-              onTimeUpdate={(e) => {
-                const v = e.currentTarget;
-                if (v.duration) setPlayerProgress(v.currentTime / v.duration);
-              }}
             />
           ) : embedUrl ? (
             <iframe
@@ -582,12 +598,13 @@ export default function SoloSharePage() {
                 </div>
               </div>
 
-              {/* Live seek-bar — fill + handle move with actual playback */}
+              {/* Live seek-bar — driven straight off video.currentTime via rAF for a smooth glide */}
               <div className="relative flex-1 h-[2px] bg-white/15">
-                <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, Math.max(0, playerProgress * 100))}%`, background: 'linear-gradient(90deg, #FF3B3B, #3B82F6)' }} />
+                <div ref={progressFillRef} className="absolute inset-y-0 left-0" style={{ width: '0%', background: 'linear-gradient(90deg, #FF3B3B, #3B82F6)' }} />
                 <div
+                  ref={progressHandleRef}
                   className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full bg-white"
-                  style={{ left: `${Math.min(100, Math.max(0, playerProgress * 100))}%` }}
+                  style={{ left: '0%' }}
                 />
               </div>
 
