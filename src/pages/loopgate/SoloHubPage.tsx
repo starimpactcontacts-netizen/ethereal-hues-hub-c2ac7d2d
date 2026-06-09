@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Star, Copy, Check, UserRound, Eye, ChevronRight, Play } from 'lucide-react';
+import { ArrowLeft, Plus, Star, Copy, Check, UserRound, Eye, ChevronRight, Play, Swords } from 'lucide-react';
 import { useMySoloShares } from '@/hooks/useSoloShares';
 import { Skeleton } from '@/components/ui/skeleton';
 import SEO from '@/components/SEO';
@@ -105,6 +105,32 @@ export default function SoloHubPage() {
             <div className="flex-1 min-w-0">
               <div className="text-[16px] font-black uppercase tracking-tight leading-none" style={TEKO}>Drop A New Solo</div>
               <p className="text-[10px] text-white/40 mt-1 truncate">Post your edit · Earn Rings · Climb the charts</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/25 shrink-0" />
+          </div>
+        </button>
+
+        {/* VERSUS INSPO entry */}
+        <button
+          onClick={() => navigate('/versus')}
+          className="relative mt-3 w-full text-left rounded-2xl overflow-hidden active:scale-[0.985] transition-transform border border-red-500/25"
+          style={{ background: 'linear-gradient(180deg, #1a0d0d 0%, #0d0a0d 100%)' }}
+        >
+          <div className="absolute inset-0 pointer-events-none" style={dotGrid} />
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, #ef4444, #3b82f6 60%, transparent)' }} />
+          <div className="relative px-4 py-4 flex items-center gap-3">
+            <div
+              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(239,68,68,0.15)', border: '2px solid rgba(239,68,68,0.4)', boxShadow: '0 0 14px rgba(239,68,68,0.2)' }}
+            >
+              <Swords className="w-5 h-5 text-red-400" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <div className="text-[16px] font-black uppercase tracking-tight leading-none" style={TEKO}>Versus Inspo</div>
+                <span className="text-[7px] font-black px-1 py-0.5 rounded bg-red-500 text-white tracking-wider" style={TEKO}>NEW</span>
+              </div>
+              <p className="text-[10px] text-white/40 mt-1 truncate">Beat the edit you're inspired by · 24h public vote</p>
             </div>
             <ChevronRight className="w-4 h-4 text-white/25 shrink-0" />
           </div>
