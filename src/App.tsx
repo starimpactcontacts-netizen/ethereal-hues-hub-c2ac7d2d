@@ -393,6 +393,9 @@ export default function App() {
               <Route path="/editorium" element={<EditoriumPage />} />
               <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
               <Route path="/solo/:id" element={<SoloDetailPage />} />
+              <Route path="/versus" element={<VersusInspoListPage />} />
+              <Route path="/versus/create" element={<VersusInspoCreatePage />} />
+              <Route path="/versus/:id" element={<VersusInspoBattlePage />} />
               <Route path="/commissions" element={<CommissionsPage />} />
               <Route path="/commissions/:id" element={<CommissionDetailPage />} />
               <Route path="/payouts" element={<PayoutsPage />} />
