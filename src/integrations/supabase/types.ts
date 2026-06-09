@@ -9525,6 +9525,134 @@ export type Database = {
         }
         Relationships: []
       }
+      versus_inspo_battles: {
+        Row: {
+          caption: string | null
+          created_at: string
+          creator_avatar_url: string | null
+          creator_id: string
+          creator_submission_platform: string | null
+          creator_submission_thumbnail: string | null
+          creator_submission_url: string | null
+          creator_username: string
+          creator_votes: number
+          id: string
+          index_awarded: number
+          inspo_duration_sec: number | null
+          inspo_source_label: string | null
+          inspo_thumbnail_url: string | null
+          inspo_video_url: string
+          inspo_votes: number
+          rings_awarded: number
+          song_artist: string | null
+          song_name: string
+          status: Database["public"]["Enums"]["versus_inspo_status"]
+          title: string
+          total_votes: number
+          updated_at: string
+          views: number
+          voting_ends_at: string | null
+          voting_started_at: string | null
+          winner: Database["public"]["Enums"]["versus_inspo_winner"] | null
+          xp_awarded: number
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          creator_avatar_url?: string | null
+          creator_id: string
+          creator_submission_platform?: string | null
+          creator_submission_thumbnail?: string | null
+          creator_submission_url?: string | null
+          creator_username: string
+          creator_votes?: number
+          id?: string
+          index_awarded?: number
+          inspo_duration_sec?: number | null
+          inspo_source_label?: string | null
+          inspo_thumbnail_url?: string | null
+          inspo_video_url: string
+          inspo_votes?: number
+          rings_awarded?: number
+          song_artist?: string | null
+          song_name: string
+          status?: Database["public"]["Enums"]["versus_inspo_status"]
+          title: string
+          total_votes?: number
+          updated_at?: string
+          views?: number
+          voting_ends_at?: string | null
+          voting_started_at?: string | null
+          winner?: Database["public"]["Enums"]["versus_inspo_winner"] | null
+          xp_awarded?: number
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          creator_avatar_url?: string | null
+          creator_id?: string
+          creator_submission_platform?: string | null
+          creator_submission_thumbnail?: string | null
+          creator_submission_url?: string | null
+          creator_username?: string
+          creator_votes?: number
+          id?: string
+          index_awarded?: number
+          inspo_duration_sec?: number | null
+          inspo_source_label?: string | null
+          inspo_thumbnail_url?: string | null
+          inspo_video_url?: string
+          inspo_votes?: number
+          rings_awarded?: number
+          song_artist?: string | null
+          song_name?: string
+          status?: Database["public"]["Enums"]["versus_inspo_status"]
+          title?: string
+          total_votes?: number
+          updated_at?: string
+          views?: number
+          voting_ends_at?: string | null
+          voting_started_at?: string | null
+          winner?: Database["public"]["Enums"]["versus_inspo_winner"] | null
+          xp_awarded?: number
+        }
+        Relationships: []
+      }
+      versus_inspo_votes: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          vote: Database["public"]["Enums"]["versus_inspo_vote_side"]
+          voter_id: string | null
+          voter_ip_hash: string | null
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          vote: Database["public"]["Enums"]["versus_inspo_vote_side"]
+          voter_id?: string | null
+          voter_ip_hash?: string | null
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          vote?: Database["public"]["Enums"]["versus_inspo_vote_side"]
+          voter_id?: string | null
+          voter_ip_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "versus_inspo_votes_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "versus_inspo_battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xp_history: {
         Row: {
           action: string
@@ -9657,6 +9785,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_login_codes: { Args: never; Returns: undefined }
+      close_due_versus_inspo_battles: { Args: never; Returns: number }
       collab_battle_recompute: {
         Args: { _battle_id: string }
         Returns: undefined
@@ -9993,6 +10122,9 @@ export type Database = {
       round_status: "pending" | "active" | "completed"
       round_type: "open" | "elimination" | "threshold"
       shop_item_type: "cosmetic" | "digital" | "physical"
+      versus_inspo_status: "editing" | "voting" | "decided" | "cancelled"
+      versus_inspo_vote_side: "creator" | "inspo"
+      versus_inspo_winner: "creator" | "inspo" | "tie"
       winner_logic: "final_qoi" | "cumulative_qoi" | "manual"
     }
     CompositeTypes: {
@@ -10179,6 +10311,9 @@ export const Constants = {
       round_status: ["pending", "active", "completed"],
       round_type: ["open", "elimination", "threshold"],
       shop_item_type: ["cosmetic", "digital", "physical"],
+      versus_inspo_status: ["editing", "voting", "decided", "cancelled"],
+      versus_inspo_vote_side: ["creator", "inspo"],
+      versus_inspo_winner: ["creator", "inspo", "tie"],
       winner_logic: ["final_qoi", "cumulative_qoi", "manual"],
     },
   },

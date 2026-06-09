@@ -44,6 +44,9 @@ const SoloSharePage = lazy(() => import("./pages/loopgate/SoloSharePage"));
 const CreateSoloSharePage = lazy(() => import("./pages/loopgate/CreateSoloSharePage"));
 const SoloHubPage = lazy(() => import("./pages/loopgate/SoloHubPage"));
 const SoloFindPage = lazy(() => import("./pages/loopgate/SoloFindPage"));
+const VersusInspoListPage = lazy(() => import("./pages/loopgate/VersusInspoListPage"));
+const VersusInspoCreatePage = lazy(() => import("./pages/loopgate/VersusInspoCreatePage"));
+const VersusInspoBattlePage = lazy(() => import("./pages/loopgate/VersusInspoBattlePage"));
 const CollabsPage = lazy(() => import("./pages/loopgate/CollabsPage"));
 const CreateCollabPage = lazy(() => import("./pages/loopgate/CreateCollabPage"));
 const CollabDetailPage = lazy(() => import("./pages/loopgate/CollabDetailPage"));
@@ -390,6 +393,9 @@ export default function App() {
               <Route path="/editorium" element={<EditoriumPage />} />
               <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
               <Route path="/solo/:id" element={<SoloDetailPage />} />
+              <Route path="/versus" element={<VersusInspoListPage />} />
+              <Route path="/versus/create" element={<VersusInspoCreatePage />} />
+              <Route path="/versus/:id" element={<VersusInspoBattlePage />} />
               <Route path="/commissions" element={<CommissionsPage />} />
               <Route path="/commissions/:id" element={<CommissionDetailPage />} />
               <Route path="/payouts" element={<PayoutsPage />} />
