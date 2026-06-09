@@ -41,6 +41,8 @@ export function useVersusInspoList(limit = 30) {
   const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
+    // best-effort: resolve any expired battles
+    (supabase.rpc as any)('close_due_versus_inspo_battles').then(() => {});
     const { data } = await (supabase.from(TABLE) as any)
       .select('*')
       .in('status', ['voting', 'decided'])
